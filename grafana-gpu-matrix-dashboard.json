@@ -29,6 +29,12 @@
       "version": ""
     },
     {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
+      "version": ""
+    },
+    {
       "type": "datasource",
       "id": "prometheus",
       "name": "Prometheus",
@@ -59,18 +65,68 @@
   "liveNow": false,
   "panels": [
     {
+      "gridPos": {
+        "h": 2,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "content": "<div style=\"font-size:18px;text-align:center;font-weight:600;line-height:48px;\">Node</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 2,
+        "w": 2,
+        "x": 3,
+        "y": 0
+      },
+      "id": 101,
+      "maxPerRow": 10,
+      "options": {
+        "content": "<div style=\"font-size:16px;text-align:center;font-weight:700;line-height:48px;\">GPU $gpu</div>",
+        "mode": "html"
+      },
+      "repeat": "gpu",
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 1,
       "panels": [],
       "repeat": "node",
-      "title": "Node: $node",
+      "title": "",
       "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 3
+      },
+      "id": 102,
+      "options": {
+        "content": "<div style=\"font-size:20px;text-align:center;font-weight:700;line-height:88px;\">$node</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
     },
     {
       "datasource": {
@@ -110,12 +166,12 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 0,
-        "y": 1
+        "w": 2,
+        "x": 3,
+        "y": 3
       },
       "id": 2,
-      "maxPerRow": 8,
+      "maxPerRow": 10,
       "options": {
         "colorMode": "backgroundSolid",
         "graphMode": "area",
@@ -142,7 +198,7 @@
           "refId": "A"
         }
       ],
-      "title": "GPU $gpu",
+      "title": "",
       "type": "stat"
     }
   ],
@@ -238,8 +294,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "AI GPU Util Matrix (Node x GPU)",
+  "title": "AI GPU Util Matrix (Visual Enhanced Node x GPU)",
   "uid": "ai-gpu-util-matrix",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
