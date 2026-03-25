@@ -255,14 +255,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
-          "instant": false,
+          "expr": "avg(avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "instant": true,
           "legendFormat": "",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "集群平均 GPU 利用率",
+      "title": "集群平均 GPU 利用率（时间范围平均）",
       "type": "stat"
     },
     {
@@ -466,14 +466,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
-          "instant": false,
+          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "instant": true,
           "legendFormat": "{{node}}",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "节点平均 GPU 利用率（负载均衡观察）",
+      "title": "节点平均 GPU 利用率（时间范围平均/负载均衡观察）",
       "type": "bargauge"
     },
     {
