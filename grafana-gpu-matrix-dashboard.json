@@ -60,8 +60,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "#73BF69",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
           "custom": {
             "align": "center",
@@ -100,6 +99,14 @@
               {
                 "color": "#73BF69",
                 "value": null
+              },
+              {
+                "color": "#F2CC0C",
+                "value": 50
+              },
+              {
+                "color": "#E24D42",
+                "value": 85
               }
             ]
           },
