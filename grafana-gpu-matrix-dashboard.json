@@ -67,8 +67,8 @@
             "align": "center",
             "cellOptions": {
               "drawStyle": "line",
-              "fillOpacity": 35,
-              "gradientMode": "none",
+              "fillOpacity": 48,
+              "gradientMode": "hue",
               "hideValue": false,
               "lineInterpolation": "smooth",
               "lineStyle": {
@@ -78,7 +78,7 @@
                 ],
                 "fill": "solid"
               },
-              "lineWidth": 2,
+              "lineWidth": 3,
               "pointSize": 2,
               "showPoints": "never",
               "spanNulls": true,
@@ -146,7 +146,7 @@
       },
       "id": 1,
       "options": {
-        "cellHeight": "md",
+        "cellHeight": "lg",
         "frozenColumns": 1,
         "showHeader": true,
         "sortBy": [
