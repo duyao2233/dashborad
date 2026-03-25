@@ -18,8 +18,14 @@
     },
     {
       "type": "panel",
-      "id": "table",
-      "name": "Table",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "text",
+      "name": "Text",
       "version": ""
     },
     {
@@ -47,247 +53,147 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
     {
+      "gridPos": {
+        "h": 2,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "content": "<div style=\"font-size:18px;text-align:center;font-weight:700;line-height:42px;\">Node</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "gridPos": {
+        "h": 2,
+        "w": 2,
+        "x": 3,
+        "y": 0
+      },
+      "id": 101,
+      "maxPerRow": 12,
+      "options": {
+        "content": "<div style=\"font-size:15px;text-align:center;font-weight:700;line-height:42px;\">$gpu卡</div>",
+        "mode": "html"
+      },
+      "repeat": "gpu",
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 1,
+      "panels": [],
+      "repeat": "node",
+      "title": "",
+      "type": "row"
+    },
+    {
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 3
+      },
+      "id": 102,
+      "options": {
+        "content": "<div style=\"font-size:20px;text-align:center;font-weight:700;line-height:82px;\">$node</div>",
+        "mode": "html"
+      },
+      "title": "",
+      "transparent": true,
+      "type": "text"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "单个大表格：行=Node，列=1卡~8卡（对应 GPU0~GPU7）。每个单元格中间显示当前利用率，背景 sparkline 为当前时间范围历史利用率。",
+      "description": "每个单元格显示当前利用率（中间数字）+ 当前 dashboard 时间范围历史趋势（背景折线）。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "custom": {
-            "align": "center",
-            "cellOptions": {
-              "drawStyle": "line",
-              "fillOpacity": 30,
-              "gradientMode": "opacity",
-              "hideValue": false,
-              "lineInterpolation": "linear",
-              "lineStyle": {
-                "dash": [
-                  0,
-                  0
-                ],
-                "fill": "solid"
-              },
-              "lineWidth": 2,
-              "pointSize": 2,
-              "showPoints": "never",
-              "spanNulls": true,
-              "type": "sparkline"
-            },
-            "inspect": false
-          },
           "decimals": 1,
           "max": 100,
           "min": 0,
-          "noValue": "-",
+          "noValue": "N/A",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#299c46",
                 "value": null
               },
               {
-                "color": "yellow",
+                "color": "#EAB839",
                 "value": 50
               },
               {
-                "color": "red",
+                "color": "#d44a3a",
                 "value": 85
               }
             ]
           },
           "unit": "percent"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Node"
-            },
-            "properties": [
-              {
-                "id": "custom.align",
-                "value": "left"
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "auto"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "none"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 22,
-        "w": 24,
-        "x": 0,
-        "y": 0
+        "h": 4,
+        "w": 2,
+        "x": 3,
+        "y": 3
       },
-      "id": 1,
+      "id": 2,
+      "maxPerRow": 12,
       "options": {
-        "cellHeight": "lg",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
+        "colorMode": "backgroundSolid",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
           ],
-          "show": false
+          "fields": "",
+          "values": false
         },
-        "frozenColumns": 1,
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "Node"
-          }
-        ]
+        "textMode": "value"
       },
       "pluginVersion": "10.4.0",
+      "repeat": "gpu",
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"0\"})",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=\"$gpu\"}",
           "instant": false,
-          "legendFormat": "1卡",
+          "legendFormat": "GPU{{gpu}}",
           "range": true,
           "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"1\"})",
-          "instant": false,
-          "legendFormat": "2卡",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"2\"})",
-          "instant": false,
-          "legendFormat": "3卡",
-          "range": true,
-          "refId": "C"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"3\"})",
-          "instant": false,
-          "legendFormat": "4卡",
-          "range": true,
-          "refId": "D"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"4\"})",
-          "instant": false,
-          "legendFormat": "5卡",
-          "range": true,
-          "refId": "E"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"5\"})",
-          "instant": false,
-          "legendFormat": "6卡",
-          "range": true,
-          "refId": "F"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"6\"})",
-          "instant": false,
-          "legendFormat": "7卡",
-          "range": true,
-          "refId": "G"
-        },
-        {
-          "editorMode": "code",
-          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"7\"})",
-          "instant": false,
-          "legendFormat": "8卡",
-          "range": true,
-          "refId": "H"
         }
       ],
-      "title": "GPU 利用率大表（Node x GPU：当前值 + 历史折线）",
-      "transformations": [
-        {
-          "id": "timeSeriesTable",
-          "options": {}
-        },
-        {
-          "id": "joinByField",
-          "options": {
-            "byField": "node",
-            "mode": "outer"
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "indexByName": {
-              "1卡": 1,
-              "2卡": 2,
-              "3卡": 3,
-              "4卡": 4,
-              "5卡": 5,
-              "6卡": 6,
-              "7卡": 7,
-              "8卡": 8,
-              "Node": 0
-            },
-            "renameByName": {
-              "A": "1卡",
-              "B": "2卡",
-              "C": "3卡",
-              "D": "4卡",
-              "E": "5卡",
-              "F": "6卡",
-              "G": "7卡",
-              "H": "8卡",
-              "Trend #A": "1卡",
-              "Trend #B": "2卡",
-              "Trend #C": "3卡",
-              "Trend #D": "4卡",
-              "Trend #E": "5卡",
-              "Trend #F": "6卡",
-              "Trend #G": "7卡",
-              "Trend #H": "8卡",
-              "Value #A": "1卡",
-              "Value #B": "2卡",
-              "Value #C": "3卡",
-              "Value #D": "4卡",
-              "Value #E": "5卡",
-              "Value #F": "6卡",
-              "Value #G": "7卡",
-              "Value #H": "8卡",
-              "node": "Node"
-            }
-          }
-        }
-      ],
-      "type": "table"
+      "title": "",
+      "type": "stat"
     }
   ],
   "refresh": "10s",
@@ -297,11 +203,76 @@
     "gpu",
     "dcgm",
     "matrix",
-    "single-table",
-    "sparkline"
+    "single-table-like",
+    "stat-sparkline"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+        "hide": 2,
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "node",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+          "refId": "PrometheusVariableQueryEditor-Node"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
+        "hide": 2,
+        "includeAll": true,
+        "label": "GPU",
+        "multi": true,
+        "name": "gpu",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
+          "refId": "PrometheusVariableQueryEditor-GPU"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -316,8 +287,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Util Matrix (Single Big Table)",
+  "title": "GPU Util Matrix (Value + Sparkline Style)",
   "uid": "ai-gpu-util-matrix",
-  "version": 4,
+  "version": 6,
   "weekStart": ""
 }
