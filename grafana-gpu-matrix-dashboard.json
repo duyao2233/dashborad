@@ -60,14 +60,15 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "#73BF69",
+            "mode": "fixed"
           },
           "custom": {
             "align": "center",
             "cellOptions": {
               "drawStyle": "line",
-              "fillOpacity": 60,
-              "gradientMode": "opacity",
+              "fillOpacity": 35,
+              "gradientMode": "none",
               "hideValue": false,
               "lineInterpolation": "smooth",
               "lineStyle": {
@@ -145,7 +146,7 @@
       },
       "id": 1,
       "options": {
-        "cellHeight": "lg",
+        "cellHeight": "md",
         "frozenColumns": 1,
         "showHeader": true,
         "sortBy": [
