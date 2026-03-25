@@ -67,7 +67,7 @@
       },
       "id": 100,
       "options": {
-        "content": "<div style=\"font-size:15px;text-align:left;font-weight:600;line-height:22px;padding-left:6px;\">Node</div>",
+        "content": "<div style=\"font-size:14px;text-align:left;font-weight:600;line-height:20px;padding-left:6px;\">Node</div>",
         "mode": "html"
       },
       "title": "",
@@ -108,14 +108,14 @@
     },
     {
       "gridPos": {
-        "h": 3,
+        "h": 2,
         "w": 3,
         "x": 0,
         "y": 2
       },
       "id": 102,
       "options": {
-        "content": "<div style=\"font-size:13px;text-align:left;font-weight:500;line-height:56px;padding-left:8px;\">$node</div>",
+        "content": "<div style=\"font-size:12px;text-align:left;font-weight:500;line-height:36px;padding-left:8px;\">$node</div>",
         "mode": "html"
       },
       "title": "",
@@ -160,7 +160,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 2,
         "w": 2,
         "x": 3,
         "y": 2
