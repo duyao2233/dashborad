@@ -82,7 +82,7 @@
         "y": 0
       },
       "id": 101,
-      "maxPerRow": 12,
+      "maxPerRow": 8,
       "options": {
         "content": "<div style=\"font-size:15px;text-align:center;font-weight:700;line-height:42px;\">$gpu卡</div>",
         "mode": "html"
@@ -165,7 +165,7 @@
         "y": 3
       },
       "id": 2,
-      "maxPerRow": 12,
+      "maxPerRow": 8,
       "options": {
         "colorMode": "backgroundGradient",
         "graphMode": "area",
@@ -178,7 +178,7 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value"
       },
       "pluginVersion": "10.4.0",
       "repeat": "gpu",
