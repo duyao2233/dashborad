@@ -123,7 +123,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(count by (instance) (DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\"}))",
+          "expr": "count(count by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -186,7 +186,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(count by (instance, gpu) (DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"}))",
+          "expr": "count(count by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -255,7 +255,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"})",
+          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
           "instant": false,
           "legendFormat": "",
           "range": true,
@@ -323,7 +323,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "stddev(avg by (instance) (DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"})) / clamp_min(avg(avg by (instance) (DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"})), 1)",
+          "expr": "stddev(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})) / clamp_min(avg(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})), 1)",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -410,9 +410,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
-          "legendFormat": "{{instance}} / GPU{{gpu}}",
+          "legendFormat": "{{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
@@ -466,9 +466,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (instance) (DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"})",
+          "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
           "instant": false,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "range": true,
           "refId": "A"
         }
@@ -512,9 +512,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\", gpu=~\"$gpu\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
-          "legendFormat": "{{instance}} / GPU{{gpu}}",
+          "legendFormat": "{{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
@@ -545,7 +545,7 @@
               "Value #A (mean)": 5,
               "Value #A (min)": 3,
               "gpu": 1,
-              "instance": 0
+              "node": 0
             },
             "renameByName": {
               "Value #A (lastNotNull)": "Current",
@@ -553,7 +553,7 @@
               "Value #A (mean)": "Mean",
               "Value #A (min)": "Min",
               "gpu": "GPU",
-              "instance": "Node"
+              "node": "Node"
             }
           }
         }
@@ -570,8 +570,7 @@
       },
       "id": 8,
       "panels": [],
-      "repeat": "node",
-      "title": "节点明细：$node",
+      "title": "节点明细",
       "type": "row"
     },
     {
@@ -651,7 +650,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=\"$node\", gpu=~\"$gpu\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
           "legendFormat": "GPU{{gpu}}",
           "range": true,
@@ -689,7 +688,7 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, instance)",
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
         "hide": 0,
         "includeAll": true,
         "label": "Node",
@@ -697,7 +696,7 @@
         "name": "node",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, instance)",
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
           "refId": "PrometheusVariableQueryEditor-Node"
         },
         "refresh": 2,
@@ -721,7 +720,7 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\"}, gpu)",
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
         "hide": 0,
         "includeAll": true,
         "label": "GPU",
@@ -729,7 +728,7 @@
         "name": "gpu",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{instance=~\"$node\"}, gpu)",
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
           "refId": "PrometheusVariableQueryEditor-GPU"
         },
         "refresh": 2,
