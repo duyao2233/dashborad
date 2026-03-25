@@ -57,7 +57,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "单个大表格：行=Node，列=0卡~7卡。每个单元格显示当前利用率值，背景 sparkline 为当前时间范围的历史利用率。",
+      "description": "单个大表格：行=Node，列=1卡~8卡（对应 GPU0~GPU7）。每个单元格中间显示当前利用率，背景 sparkline 为当前时间范围历史利用率。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -67,7 +67,7 @@
             "align": "center",
             "cellOptions": {
               "drawStyle": "line",
-              "fillOpacity": 20,
+              "fillOpacity": 30,
               "gradientMode": "opacity",
               "hideValue": false,
               "lineInterpolation": "linear",
@@ -78,7 +78,7 @@
                 ],
                 "fill": "solid"
               },
-              "lineWidth": 1,
+              "lineWidth": 2,
               "pointSize": 2,
               "showPoints": "never",
               "spanNulls": true,
@@ -166,7 +166,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"0\"})",
           "instant": false,
-          "legendFormat": "0卡",
+          "legendFormat": "1卡",
           "range": true,
           "refId": "A"
         },
@@ -174,7 +174,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"1\"})",
           "instant": false,
-          "legendFormat": "1卡",
+          "legendFormat": "2卡",
           "range": true,
           "refId": "B"
         },
@@ -182,7 +182,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"2\"})",
           "instant": false,
-          "legendFormat": "2卡",
+          "legendFormat": "3卡",
           "range": true,
           "refId": "C"
         },
@@ -190,7 +190,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"3\"})",
           "instant": false,
-          "legendFormat": "3卡",
+          "legendFormat": "4卡",
           "range": true,
           "refId": "D"
         },
@@ -198,7 +198,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"4\"})",
           "instant": false,
-          "legendFormat": "4卡",
+          "legendFormat": "5卡",
           "range": true,
           "refId": "E"
         },
@@ -206,7 +206,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"5\"})",
           "instant": false,
-          "legendFormat": "5卡",
+          "legendFormat": "6卡",
           "range": true,
           "refId": "F"
         },
@@ -214,7 +214,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"6\"})",
           "instant": false,
-          "legendFormat": "6卡",
+          "legendFormat": "7卡",
           "range": true,
           "refId": "G"
         },
@@ -222,7 +222,7 @@
           "editorMode": "code",
           "expr": "avg by (node) (DCGM_FI_DEV_GPU_UTIL{gpu=\"7\"})",
           "instant": false,
-          "legendFormat": "7卡",
+          "legendFormat": "8卡",
           "range": true,
           "refId": "H"
         }
@@ -247,33 +247,41 @@
               "Time": true
             },
             "indexByName": {
-              "0卡": 1,
-              "1卡": 2,
-              "2卡": 3,
-              "3卡": 4,
-              "4卡": 5,
-              "5卡": 6,
-              "6卡": 7,
-              "7卡": 8,
+              "1卡": 1,
+              "2卡": 2,
+              "3卡": 3,
+              "4卡": 4,
+              "5卡": 5,
+              "6卡": 6,
+              "7卡": 7,
+              "8卡": 8,
               "Node": 0
             },
             "renameByName": {
-              "A": "0卡",
-              "B": "1卡",
-              "C": "2卡",
-              "D": "3卡",
-              "E": "4卡",
-              "F": "5卡",
-              "G": "6卡",
-              "H": "7卡",
-              "Value #A": "0卡",
-              "Value #B": "1卡",
-              "Value #C": "2卡",
-              "Value #D": "3卡",
-              "Value #E": "4卡",
-              "Value #F": "5卡",
-              "Value #G": "6卡",
-              "Value #H": "7卡",
+              "A": "1卡",
+              "B": "2卡",
+              "C": "3卡",
+              "D": "4卡",
+              "E": "5卡",
+              "F": "6卡",
+              "G": "7卡",
+              "H": "8卡",
+              "Trend #A": "1卡",
+              "Trend #B": "2卡",
+              "Trend #C": "3卡",
+              "Trend #D": "4卡",
+              "Trend #E": "5卡",
+              "Trend #F": "6卡",
+              "Trend #G": "7卡",
+              "Trend #H": "8卡",
+              "Value #A": "1卡",
+              "Value #B": "2卡",
+              "Value #C": "3卡",
+              "Value #D": "4卡",
+              "Value #E": "5卡",
+              "Value #F": "6卡",
+              "Value #G": "7卡",
+              "Value #H": "8卡",
               "node": "Node"
             }
           }
