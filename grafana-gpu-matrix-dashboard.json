@@ -18,20 +18,8 @@
     },
     {
       "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "row",
-      "name": "Row",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "text",
-      "name": "Text",
+      "id": "table",
+      "name": "Table",
       "version": ""
     },
     {
@@ -59,90 +47,32 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 1,
+  "graphTooltip": 0,
   "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
     {
-      "gridPos": {
-        "h": 2,
-        "w": 3,
-        "x": 0,
-        "y": 0
-      },
-      "id": 100,
-      "options": {
-        "content": "<div style=\"font-size:18px;text-align:center;font-weight:600;line-height:48px;\">Node</div>",
-        "mode": "html"
-      },
-      "title": "",
-      "transparent": true,
-      "type": "text"
-    },
-    {
-      "gridPos": {
-        "h": 2,
-        "w": 2,
-        "x": 3,
-        "y": 0
-      },
-      "id": 101,
-      "maxPerRow": 10,
-      "options": {
-        "content": "<div style=\"font-size:16px;text-align:center;font-weight:700;line-height:48px;\">GPU $gpu</div>",
-        "mode": "html"
-      },
-      "repeat": "gpu",
-      "title": "",
-      "transparent": true,
-      "type": "text"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 2
-      },
-      "id": 1,
-      "panels": [],
-      "repeat": "node",
-      "title": "",
-      "type": "row"
-    },
-    {
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 0,
-        "y": 3
-      },
-      "id": 102,
-      "options": {
-        "content": "<div style=\"font-size:20px;text-align:center;font-weight:700;line-height:88px;\">$node</div>",
-        "mode": "html"
-      },
-      "title": "",
-      "transparent": true,
-      "type": "text"
-    },
-    {
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "单元格数字显示当前 GPU 利用率，背景 sparkline 显示当前时间范围内历史趋势。",
+      "description": "仅保留一个矩阵表：行=Node，列=GPU，值=当前 GPU Util（%）。只显示有真实 GPU util 数据的组合，避免空参数。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "color-background"
+            }
+          },
           "decimals": 1,
           "max": 100,
           "min": 0,
-          "noValue": "N/A",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -162,140 +92,132 @@
           },
           "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Node"
+            },
+            "properties": [
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 3,
-        "y": 3
+        "h": 20,
+        "w": 24,
+        "x": 0,
+        "y": 0
       },
-      "id": 2,
-      "maxPerRow": 10,
+      "id": 1,
       "options": {
-        "colorMode": "backgroundSolid",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+        "cellHeight": "md",
+        "footer": {
+          "countRows": false,
           "fields": "",
-          "values": false
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "textMode": "value"
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Node"
+          }
+        ]
       },
       "pluginVersion": "10.4.0",
-      "repeat": "gpu",
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=\"$gpu\"}",
-          "instant": false,
-          "legendFormat": "GPU{{gpu}}",
-          "range": true,
+          "expr": "max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{gpu=~\"[0-9]+\"})",
+          "instant": true,
+          "legendFormat": "",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "",
-      "type": "stat"
+      "title": "GPU 利用率矩阵（Node x GPU，当前值）",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value": 2,
+              "gpu": 1,
+              "node": 0
+            },
+            "renameByName": {
+              "Value": "Util",
+              "gpu": "GPU",
+              "node": "Node"
+            }
+          }
+        },
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "GPU",
+            "rowField": "Node",
+            "valueField": "Util"
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
-  "refresh": "15s",
+  "refresh": "10s",
   "schemaVersion": 39,
   "style": "dark",
   "tags": [
     "gpu",
     "dcgm",
     "matrix",
-    "node-gpu"
+    "simplified"
   ],
   "templating": {
-    "list": [
-      {
-        "allValue": ".*",
-        "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Node",
-        "multi": true,
-        "name": "node",
-        "options": [],
-        "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
-          "refId": "PrometheusVariableQueryEditor-Node"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "allValue": ".*",
-        "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, gpu)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "GPU",
-        "multi": true,
-        "name": "gpu",
-        "options": [],
-        "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, gpu)",
-          "refId": "PrometheusVariableQueryEditor-GPU"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 3,
-        "type": "query"
-      }
-    ]
+    "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
       "5s",
       "10s",
-      "15s",
       "30s",
-      "1m",
-      "5m"
+      "1m"
     ]
   },
   "timezone": "browser",
-  "title": "AI GPU Util Matrix (Visual Enhanced Node x GPU)",
+  "title": "GPU Util Matrix (Single Table)",
   "uid": "ai-gpu-util-matrix",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
