@@ -569,12 +569,183 @@
       "type": "table"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "折线图 + 右侧表格同时展示每台机器每张卡显存占用率（由 FB_USED / (FB_USED + FB_FREE) 计算）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "min",
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "100 * DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} / clamp_min((DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} + DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}), 1)",
+          "instant": false,
+          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "每机每卡 GPU 显存占用率趋势（当前值 + 历史统计）",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "表格展示每个节点每张卡在当前时间范围内的显存已用（MiB）的 Current/Min/Max/Mean。",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "instant": false,
+          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "每机每卡 GPU 显存已用汇总表（MiB，当前值 + 历史状态）",
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "labelsToFields": true,
+            "reducers": [
+              "lastNotNull",
+              "min",
+              "max",
+              "mean"
+            ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value #A (lastNotNull)": 2,
+              "Value #A (max)": 4,
+              "Value #A (mean)": 5,
+              "Value #A (min)": 3,
+              "gpu": 1,
+              "node": 0
+            },
+            "renameByName": {
+              "Value #A (lastNotNull)": "Current(MiB)",
+              "Value #A (max)": "Max(MiB)",
+              "Value #A (mean)": "Mean(MiB)",
+              "Value #A (min)": "Min(MiB)",
+              "gpu": "GPU",
+              "node": "Node"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 30
       },
       "id": 8,
       "panels": [],
@@ -586,6 +757,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
+      "description": "同一节点下同时展示每张卡 GPU Util（左轴，%）与显存已用（右轴，MiB 原始值）。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -627,13 +799,30 @@
           "min": 0,
           "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".* MemUsed$"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 23
+        "y": 31
       },
       "id": 9,
       "maxPerRow": 2,
@@ -663,9 +852,17 @@
           "legendFormat": "GPU{{gpu}}",
           "range": true,
           "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "DCGM_FI_DEV_FB_USED{node=\"$node\", gpu=~\"${gpu:regex}\"}",
+          "instant": false,
+          "legendFormat": "GPU{{gpu}} MemUsed",
+          "range": true,
+          "refId": "B"
         }
       ],
-      "title": "节点 $node：每张卡 GPU 利用率趋势",
+      "title": "节点 $node：每张卡 GPU 利用率 + 显存已用趋势",
       "type": "timeseries"
     }
   ],
