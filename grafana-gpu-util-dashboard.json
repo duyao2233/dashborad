@@ -255,14 +255,22 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg(avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
           "instant": true,
-          "legendFormat": "",
+          "legendFormat": "当前瞬时平均",
           "range": false,
           "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "avg(avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "时间范围平均",
+          "range": false,
+          "refId": "B"
         }
       ],
-      "title": "集群平均 GPU 利用率（时间范围平均）",
+      "title": "集群平均 GPU 利用率（瞬时 + 时间范围）",
       "type": "stat"
     },
     {
