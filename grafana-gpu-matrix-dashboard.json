@@ -108,14 +108,14 @@
     },
     {
       "gridPos": {
-        "h": 4,
+        "h": 5,
         "w": 3,
         "x": 0,
         "y": 3
       },
       "id": 102,
       "options": {
-        "content": "<div style=\"font-size:20px;text-align:center;font-weight:700;line-height:82px;\">$node</div>",
+        "content": "<div style=\"font-size:20px;text-align:center;font-weight:700;line-height:106px;\">$node</div>",
         "mode": "html"
       },
       "title": "",
@@ -131,7 +131,8 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "#F2CC0C",
+            "mode": "fixed"
           },
           "decimals": 1,
           "max": 100,
@@ -159,7 +160,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 5,
         "w": 2,
         "x": 3,
         "y": 3
@@ -167,10 +168,10 @@
       "id": 2,
       "maxPerRow": 8,
       "options": {
-        "colorMode": "backgroundGradient",
+        "colorMode": "none",
         "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -193,7 +194,7 @@
         }
       ],
       "title": "",
-      "transparent": true,
+      "transparent": false,
       "type": "stat"
     }
   ],
