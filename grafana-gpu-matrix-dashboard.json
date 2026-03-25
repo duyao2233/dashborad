@@ -60,14 +60,14 @@
   "panels": [
     {
       "gridPos": {
-        "h": 2,
+        "h": 1,
         "w": 3,
         "x": 0,
         "y": 0
       },
       "id": 100,
       "options": {
-        "content": "<div style=\"font-size:18px;text-align:center;font-weight:700;line-height:42px;\">Node</div>",
+        "content": "<div style=\"font-size:15px;text-align:left;font-weight:600;line-height:22px;padding-left:6px;\">Node</div>",
         "mode": "html"
       },
       "title": "",
@@ -76,7 +76,7 @@
     },
     {
       "gridPos": {
-        "h": 2,
+        "h": 1,
         "w": 2,
         "x": 3,
         "y": 0
@@ -84,7 +84,7 @@
       "id": 101,
       "maxPerRow": 8,
       "options": {
-        "content": "<div style=\"font-size:15px;text-align:center;font-weight:700;line-height:42px;\">$gpu卡</div>",
+        "content": "<div style=\"font-size:13px;text-align:center;font-weight:600;line-height:22px;\">$gpu卡</div>",
         "mode": "html"
       },
       "repeat": "gpu",
@@ -98,7 +98,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 2
+        "y": 1
       },
       "id": 1,
       "panels": [],
@@ -108,14 +108,14 @@
     },
     {
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 3,
         "x": 0,
-        "y": 3
+        "y": 2
       },
       "id": 102,
       "options": {
-        "content": "<div style=\"font-size:20px;text-align:center;font-weight:700;line-height:106px;\">$node</div>",
+        "content": "<div style=\"font-size:13px;text-align:left;font-weight:500;line-height:56px;padding-left:8px;\">$node</div>",
         "mode": "html"
       },
       "title": "",
@@ -160,18 +160,18 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 2,
         "x": 3,
-        "y": 3
+        "y": 2
       },
       "id": 2,
       "maxPerRow": 8,
       "options": {
         "colorMode": "none",
         "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
+        "justifyMode": "center",
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
