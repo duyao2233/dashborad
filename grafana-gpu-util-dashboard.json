@@ -123,7 +123,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(count by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}))",
+          "expr": "count(count by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -186,7 +186,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(count by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
+          "expr": "count(count by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -255,7 +255,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
+          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"})",
           "instant": true,
           "legendFormat": "当前瞬时平均",
           "range": false,
@@ -263,7 +263,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg(avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}[$__range]))",
           "instant": true,
           "legendFormat": "时间范围平均",
           "range": false,
@@ -331,7 +331,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "stddev(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})) / clamp_min(avg(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})), 1)",
+          "expr": "stddev(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"})) / clamp_min(avg(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"})), 1)",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -418,15 +418,86 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{node}} ({{instance}}) / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
       "title": "每机每卡 GPU 利用率趋势（含当前值与历史统计）",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "QPS 风格卡片：按节点/每张 GPU 展示当前利用率（Current）并带时间范围内小趋势（sparkline）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}",
+          "instant": false,
+          "legendFormat": "{{node}} ({{instance}}) / GPU{{gpu}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "每机每卡 GPU 利用率当前值（QPS 风格）",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -450,7 +521,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 22
       },
       "id": 6,
       "options": {
@@ -474,7 +545,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}[$__range]))",
           "instant": true,
           "legendFormat": "{{node}}",
           "range": false,
@@ -501,7 +572,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 22
       },
       "id": 7,
       "options": {
@@ -520,9 +591,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{node}} ({{instance}}) / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
@@ -621,7 +692,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 30
       },
       "id": 10,
       "options": {
@@ -645,9 +716,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} / clamp_min((DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} + DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}), 1)",
+          "expr": "100 * DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"} / clamp_min((DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"} + DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}), 1)",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{node}} ({{instance}}) / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
@@ -672,7 +743,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 30
       },
       "id": 11,
       "options": {
@@ -691,9 +762,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{node}} ({{instance}}) / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
@@ -745,7 +816,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 38
       },
       "id": 8,
       "panels": [],
@@ -822,7 +893,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 39
       },
       "id": 9,
       "maxPerRow": 2,
@@ -847,7 +918,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
           "legendFormat": "GPU{{gpu}}",
           "range": true,
@@ -855,7 +926,7 @@
         },
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_FB_USED{node=\"$node\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_FB_USED{node=\"$node\", instance=~\"(${ip:regex}):[0-9]+\", gpu=~\"${gpu:regex}\"}",
           "instant": false,
           "legendFormat": "GPU{{gpu}} MemUsed",
           "range": true,
@@ -893,7 +964,39 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "IP",
+        "multi": false,
+        "name": "ip",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, instance)",
+          "refId": "PrometheusVariableQueryEditor-IP"
+        },
+        "refresh": 2,
+        "regex": "/([^:]+):[0-9]+/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{instance=~\"(${ip:regex}):[0-9]+\"}, node)",
         "hide": 0,
         "includeAll": true,
         "label": "Node",
@@ -901,7 +1004,7 @@
         "name": "node",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{instance=~\"(${ip:regex}):[0-9]+\"}, node)",
           "refId": "PrometheusVariableQueryEditor-Node"
         },
         "refresh": 2,
@@ -925,7 +1028,7 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\"}, gpu)",
         "hide": 0,
         "includeAll": true,
         "label": "GPU",
@@ -933,7 +1036,7 @@
         "name": "gpu",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", instance=~\"(${ip:regex}):[0-9]+\"}, gpu)",
           "refId": "PrometheusVariableQueryEditor-GPU"
         },
         "refresh": 2,
@@ -960,6 +1063,6 @@
   "timezone": "browser",
   "title": "AI GPU Util Monitoring (Dynamic Nodes)",
   "uid": "ai-gpu-util-dynamic",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
