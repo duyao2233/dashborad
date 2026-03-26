@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPU 监控面板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+  }
+
+  header {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #58a6ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .header-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #76b900, #4a7500);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 13px;
+    color: #8b949e;
+    white-space: nowrap;
+  }
+
+  #node-filter {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #e6edf3;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 180px;
+    outline: none;
+  }
+  #node-filter:focus { border-color: #58a6ff; }
+
+  .refresh-btn {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #e6edf3;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .refresh-btn:hover { background: #30363d; }
+
+  .refresh-spinner { animation: spin 1s linear infinite; display: none; }
+  .refresh-spinner.active { display: inline-block; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .status-bar {
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    padding: 8px 24px;
+    font-size: 12px;
+    color: #8b949e;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3fb950;
+  }
+  .status-dot.error { background: #f85149; }
+
+  main {
+    padding: 20px 24px;
+  }
+
+  .cluster-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .summary-card .value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .summary-card .label {
+    font-size: 12px;
+    color: #8b949e;
+    margin-top: 4px;
+  }
+
+  .util-color { color: #58a6ff; }
+  .mem-color { color: #a371f7; }
+  .power-color { color: #f0883e; }
+  .temp-color { color: #f85149; }
+
+  .node-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .node-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .node-header {
+    background: #1c2128;
+    border-bottom: 1px solid #30363d;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .node-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #58a6ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .node-meta {
+    font-size: 12px;
+    color: #8b949e;
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  .node-avg-util {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 12px;
+    background: #21262d;
+  }
+
+  .gpu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1px;
+    background: #30363d;
+  }
+
+  .gpu-panel {
+    background: #0d1117;
+    padding: 14px;
+  }
+
+  .gpu-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .gpu-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e6edf3;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .gpu-model {
+    font-size: 11px;
+    color: #8b949e;
+  }
+
+  .gpu-current-values {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .metric-badge {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 6px 4px;
+    text-align: center;
+  }
+
+  .metric-badge .m-val {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .metric-badge .m-label {
+    font-size: 10px;
+    color: #8b949e;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+
+  .util-bar-wrap {
+    background: #21262d;
+    border-radius: 4px;
+    height: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .util-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    background: linear-gradient(90deg, #1f6feb, #58a6ff);
+  }
+
+  .chart-container {
+    position: relative;
+    height: 100px;
+  }
+
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 17, 23, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    gap: 12px;
+    font-size: 14px;
+    color: #8b949e;
+  }
+  .loading-overlay.hidden { display: none; }
+
+  .loading-ring {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #30363d;
+    border-top-color: #58a6ff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .error-banner {
+    background: #3d1a1a;
+    border: 1px solid #f85149;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #f85149;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-banner.visible { display: block; }
+
+  .no-data {
+    text-align: center;
+    color: #8b949e;
+    padding: 40px;
+    font-size: 14px;
+  }
+
+  /* Gauge-like coloring based on value */
+  .val-low { color: #3fb950; }
+  .val-mid { color: #e3b341; }
+  .val-high { color: #f0883e; }
+  .val-crit { color: #f85149; }
+
+  .bar-low { background: linear-gradient(90deg, #1a4229, #3fb950); }
+  .bar-mid { background: linear-gradient(90deg, #4a3a00, #e3b341); }
+  .bar-high { background: linear-gradient(90deg, #4a2800, #f0883e); }
+  .bar-crit { background: linear-gradient(90deg, #4a0000, #f85149); }
+
+  @media (max-width: 600px) {
+    .gpu-grid { grid-template-columns: 1fr; }
+    header { padding: 12px 16px; }
+    main { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-ring"></div>
+  <span>正在加载 GPU 监控数据…</span>
+</div>
+
+<header>
+  <h1>
+    <div class="header-icon">⚡</div>
+    GPU 监控面板
+  </h1>
+  <div class="filter-bar">
+    <span class="filter-label">节点筛选：</span>
+    <select id="node-filter">
+      <option value="all">全部节点</option>
+    </select>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">
+      <span class="refresh-spinner" id="spinner">↻</span>
+      <span>刷新</span>
+    </button>
+  </div>
+</header>
+
+<div class="status-bar">
+  <div class="status-dot" id="status-dot"></div>
+  <span id="status-text">连接中…</span>
+  <span style="margin-left:auto" id="last-update"></span>
+</div>
+
+<main>
+  <div class="error-banner" id="error-banner"></div>
+
+  <div class="cluster-summary" id="cluster-summary">
+    <div class="summary-card">
+      <div class="value util-color" id="sum-util">—</div>
+      <div class="label">集群平均 GPU 利用率</div>
+    </div>
+    <div class="summary-card">
+      <div class="value mem-color" id="sum-mem">—</div>
+      <div class="label">集群显存使用率</div>
+    </div>
+    <div class="summary-card">
+      <div class="value power-color" id="sum-power">—</div>
+      <div class="label">集群总功耗 (W)</div>
+    </div>
+    <div class="summary-card">
+      <div class="value" id="sum-nodes" style="color:#e6edf3">—</div>
+      <div class="label">活跃节点数 / GPU 数</div>
+    </div>
+    <div class="summary-card">
+      <div class="value temp-color" id="sum-temp">—</div>
+      <div class="label">最高 GPU 温度 (°C)</div>
+    </div>
+  </div>
+
+  <div class="node-grid" id="node-grid">
+    <div class="no-data">正在加载数据…</div>
+  </div>
+</main>
+
+<script>
+const PROM_URL = 'http://157.66.255.189:32003';
+const REFRESH_INTERVAL = 30000; // 30s auto-refresh
+const HISTORY_STEP = '60s';
+const HISTORY_RANGE = '1h'; // last 1 hour for history charts
+
+// Chart instances keyed by "node-gpu"
+const charts = {};
+// Node data state
+let nodeData = {};
+let selectedNode = 'all';
+let refreshTimer = null;
+
+// ───── Prometheus helpers ─────
+
+async function promQuery(query) {
+  const url = `${PROM_URL}/api/v1/query?query=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.error || 'Prometheus error');
+  return json.data.result;
+}
+
+async function promRange(query) {
+  const end = Math.floor(Date.now() / 1000);
+  const start = end - 3600; // 1 hour
+  const url = `${PROM_URL}/api/v1/query_range?query=${encodeURIComponent(query)}&start=${start}&end=${end}&step=${HISTORY_STEP}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.error || 'Prometheus error');
+  return json.data.result;
+}
+
+// ───── Data loading ─────
+
+async function loadAll() {
+  showSpinner(true);
+  hideError();
+  try {
+    const [utilNow, memUsedNow, memFreeNow, powerNow, tempNow, utilHistory] = await Promise.all([
+      promQuery('DCGM_FI_DEV_GPU_UTIL'),
+      promQuery('DCGM_FI_DEV_FB_USED'),
+      promQuery('DCGM_FI_DEV_FB_FREE'),
+      promQuery('DCGM_FI_DEV_POWER_USAGE'),
+      promQuery('DCGM_FI_DEV_GPU_TEMP'),
+      promRange('DCGM_FI_DEV_GPU_UTIL'),
+    ]);
+
+    buildNodeData(utilNow, memUsedNow, memFreeNow, powerNow, tempNow, utilHistory);
+    populateNodeFilter();
+    renderDashboard();
+    updateStatus(true);
+  } catch (e) {
+    showError(`无法连接到 Prometheus: ${e.message}`);
+    updateStatus(false);
+  } finally {
+    showSpinner(false);
+  }
+}
+
+function buildNodeData(utilNow, memUsedNow, memFreeNow, powerNow, tempNow, utilHistory) {
+  nodeData = {};
+
+  const getKey = m => `${m.node}::${m.gpu}`;
+
+  // Build instant map
+  const utilMap = {}, memUsedMap = {}, memFreeMap = {}, powerMap = {}, tempMap = {};
+  for (const r of utilNow)   utilMap[getKey(r.metric)]    = { val: parseFloat(r.value[1]), meta: r.metric };
+  for (const r of memUsedNow) memUsedMap[getKey(r.metric)] = parseFloat(r.value[1]);
+  for (const r of memFreeNow) memFreeMap[getKey(r.metric)] = parseFloat(r.value[1]);
+  for (const r of powerNow)  powerMap[getKey(r.metric)]   = parseFloat(r.value[1]);
+  for (const r of tempNow)   tempMap[getKey(r.metric)]    = parseFloat(r.value[1]);
+
+  // Build history map: node::gpu -> {timestamps, values}
+  const histMap = {};
+  for (const r of utilHistory) {
+    const k = getKey(r.metric);
+    histMap[k] = {
+      timestamps: r.values.map(v => v[0] * 1000),
+      values: r.values.map(v => parseFloat(v[1])),
+    };
+  }
+
+  // Merge into nodeData
+  for (const [key, { val, meta }] of Object.entries(utilMap)) {
+    const node = meta.node;
+    const gpu  = meta.gpu;
+    if (!nodeData[node]) nodeData[node] = { gpus: {}, instance: meta.instance };
+    const memUsed = memUsedMap[key] || 0;
+    const memFree = memFreeMap[key] || 0;
+    const memTotal = memUsed + memFree;
+    nodeData[node].gpus[gpu] = {
+      gpu,
+      device: meta.device,
+      modelName: meta.modelName || 'NVIDIA GPU',
+      util: val,
+      memUsed,
+      memFree,
+      memTotal,
+      memPct: memTotal > 0 ? (memUsed / memTotal * 100) : 0,
+      power: powerMap[key] || 0,
+      temp: tempMap[key] || 0,
+      history: histMap[key] || { timestamps: [], values: [] },
+    };
+  }
+}
+
+// ───── Node filter ─────
+
+function populateNodeFilter() {
+  const sel = document.getElementById('node-filter');
+  const nodes = Object.keys(nodeData).sort();
+  // Keep current selection if valid
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">全部节点 (All)</option>';
+  for (const n of nodes) {
+    const opt = document.createElement('option');
+    opt.value = n;
+    // Show node name
+    opt.textContent = n;
+    sel.appendChild(opt);
+  }
+  if (current && nodes.includes(current)) sel.value = current;
+  else sel.value = 'all';
+  selectedNode = sel.value;
+}
+
+document.getElementById('node-filter').addEventListener('change', function() {
+  selectedNode = this.value;
+  renderDashboard();
+});
+
+// ───── Rendering ─────
+
+function renderDashboard() {
+  updateClusterSummary();
+  renderNodeGrid();
+}
+
+function updateClusterSummary() {
+  const nodes = filteredNodes();
+  let totalUtil = 0, totalMemUsed = 0, totalMemTotal = 0, totalPower = 0, maxTemp = 0, gpuCount = 0;
+
+  for (const node of nodes) {
+    for (const gpu of Object.values(nodeData[node].gpus)) {
+      totalUtil += gpu.util;
+      totalMemUsed += gpu.memUsed;
+      totalMemTotal += gpu.memTotal;
+      totalPower += gpu.power;
+      if (gpu.temp > maxTemp) maxTemp = gpu.temp;
+      gpuCount++;
+    }
+  }
+
+  const avgUtil = gpuCount > 0 ? (totalUtil / gpuCount).toFixed(1) : '—';
+  const memPct = totalMemTotal > 0 ? ((totalMemUsed / totalMemTotal) * 100).toFixed(1) : '—';
+
+  document.getElementById('sum-util').textContent    = gpuCount ? `${avgUtil}%` : '—';
+  document.getElementById('sum-mem').textContent     = gpuCount ? `${memPct}%` : '—';
+  document.getElementById('sum-power').textContent   = gpuCount ? Math.round(totalPower).toLocaleString() : '—';
+  document.getElementById('sum-nodes').textContent   = gpuCount ? `${nodes.length} / ${gpuCount}` : '—';
+  document.getElementById('sum-temp').textContent    = gpuCount ? `${maxTemp}°C` : '—';
+
+  // Color util
+  const uEl = document.getElementById('sum-util');
+  uEl.className = 'value util-color';
+}
+
+function filteredNodes() {
+  if (selectedNode === 'all') return Object.keys(nodeData).sort();
+  return nodeData[selectedNode] ? [selectedNode] : [];
+}
+
+function renderNodeGrid() {
+  const grid = document.getElementById('node-grid');
+  const nodes = filteredNodes();
+
+  if (nodes.length === 0) {
+    grid.innerHTML = '<div class="no-data">暂无数据</div>';
+    return;
+  }
+
+  // Destroy charts for nodes no longer visible
+  const existingKeys = new Set(Object.keys(charts));
+  const newKeys = new Set();
+  for (const node of nodes) {
+    for (const gpu of Object.keys(nodeData[node].gpus)) {
+      newKeys.add(`${node}-${gpu}`);
+    }
+  }
+  for (const k of existingKeys) {
+    if (!newKeys.has(k)) {
+      charts[k].destroy();
+      delete charts[k];
+    }
+  }
+
+  grid.innerHTML = '';
+  for (const node of nodes) {
+    const card = buildNodeCard(node, nodeData[node]);
+    grid.appendChild(card);
+  }
+
+  // Draw charts after DOM insertion
+  for (const node of nodes) {
+    for (const [gpuId, gpu] of Object.entries(nodeData[node].gpus)) {
+      const chartKey = `${node}-${gpuId}`;
+      const canvas = document.getElementById(`chart-${chartKey}`);
+      if (canvas) drawChart(canvas, chartKey, gpu.history);
+    }
+  }
+}
+
+function buildNodeCard(nodeName, nd) {
+  const gpus = Object.values(nd.gpus).sort((a, b) => parseInt(a.gpu) - parseInt(b.gpu));
+  const avgUtil = gpus.length ? (gpus.reduce((s, g) => s + g.util, 0) / gpus.length).toFixed(1) : 0;
+  const totalPower = gpus.reduce((s, g) => s + g.power, 0);
+
+  const card = document.createElement('div');
+  card.className = 'node-card';
+
+  const utilClass = utilColorClass(avgUtil);
+
+  card.innerHTML = `
+    <div class="node-header">
+      <div class="node-name">
+        <span>🖥</span>
+        ${nodeName}
+      </div>
+      <div class="node-meta">
+        <span style="color:#8b949e">IP: ${nd.instance.replace(':9400','')}</span>
+        <span style="color:#8b949e">${gpus[0]?.modelName || 'GPU'} × ${gpus.length}</span>
+        <span style="color:#8b949e">功耗: ${Math.round(totalPower)}W</span>
+        <span class="node-avg-util ${utilClass}">平均利用率 ${avgUtil}%</span>
+      </div>
+    </div>
+    <div class="gpu-grid">
+      ${gpus.map(gpu => buildGpuPanel(nodeName, gpu)).join('')}
+    </div>
+  `;
+  return card;
+}
+
+function buildGpuPanel(nodeName, gpu) {
+  const utilClass = utilColorClass(gpu.util);
+  const barClass  = utilBarClass(gpu.util);
+  const memPctStr = gpu.memPct.toFixed(1);
+  const memUsedGB = (gpu.memUsed / 1024).toFixed(1);
+  const memTotalGB = (gpu.memTotal / 1024).toFixed(1);
+  const chartKey = `${nodeName}-${gpu.gpu}`;
+
+  return `
+    <div class="gpu-panel">
+      <div class="gpu-panel-header">
+        <div class="gpu-title">
+          <span>⚡</span>
+          GPU ${gpu.gpu}
+          <span class="gpu-model">(${gpu.device})</span>
+        </div>
+        <span class="${utilClass}" style="font-size:13px;font-weight:700">${gpu.util}%</span>
+      </div>
+
+      <div class="gpu-current-values">
+        <div class="metric-badge">
+          <div class="m-val ${utilClass}">${gpu.util}%</div>
+          <div class="m-label">GPU利用率</div>
+        </div>
+        <div class="metric-badge">
+          <div class="m-val mem-color">${memPctStr}%</div>
+          <div class="m-label">显存利用率</div>
+        </div>
+        <div class="metric-badge">
+          <div class="m-val power-color">${Math.round(gpu.power)}W</div>
+          <div class="m-label">功耗</div>
+        </div>
+        <div class="metric-badge">
+          <div class="m-val temp-color">${gpu.temp}°C</div>
+          <div class="m-label">温度</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px;color:#8b949e;margin-bottom:4px;display:flex;justify-content:space-between">
+        <span>GPU 利用率</span>
+        <span>${gpu.util}%</span>
+      </div>
+      <div class="util-bar-wrap">
+        <div class="util-bar ${barClass}" style="width:${Math.min(gpu.util,100)}%"></div>
+      </div>
+
+      <div style="font-size:11px;color:#8b949e;margin-bottom:4px;display:flex;justify-content:space-between">
+        <span>显存</span>
+        <span>${memUsedGB} GB / ${memTotalGB} GB (${memPctStr}%)</span>
+      </div>
+      <div class="util-bar-wrap" style="margin-bottom:10px">
+        <div class="util-bar" style="width:${Math.min(gpu.memPct,100)}%;background:linear-gradient(90deg,#3a1f6e,#a371f7)"></div>
+      </div>
+
+      <div style="font-size:11px;color:#8b949e;margin-bottom:4px">历史利用率 (近1小时)</div>
+      <div class="chart-container">
+        <canvas id="chart-${chartKey}"></canvas>
+      </div>
+    </div>
+  `;
+}
+
+function drawChart(canvas, key, history) {
+  if (charts[key]) {
+    // Update existing chart
+    charts[key].data.labels = history.timestamps.map(t => formatTime(t));
+    charts[key].data.datasets[0].data = history.values;
+    charts[key].update('none');
+    return;
+  }
+
+  const labels = history.timestamps.map(t => formatTime(t));
+  const ctx = canvas.getContext('2d');
+
+  charts[key] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: history.values,
+        borderColor: '#58a6ff',
+        backgroundColor: 'rgba(88, 166, 255, 0.1)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: ctx => `GPU利用率: ${ctx.parsed.y.toFixed(1)}%`,
+          },
+          backgroundColor: '#161b22',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          titleColor: '#8b949e',
+          bodyColor: '#e6edf3',
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#8b949e',
+            font: { size: 10 },
+            maxTicksLimit: 6,
+            maxRotation: 0,
+          },
+          grid: { color: '#21262d' },
+        },
+        y: {
+          min: 0,
+          max: 100,
+          ticks: {
+            color: '#8b949e',
+            font: { size: 10 },
+            callback: v => `${v}%`,
+            stepSize: 25,
+          },
+          grid: { color: '#21262d' },
+        },
+      },
+    }
+  });
+}
+
+// ───── Utilities ─────
+
+function utilColorClass(val) {
+  if (val >= 90) return 'val-crit';
+  if (val >= 70) return 'val-high';
+  if (val >= 40) return 'val-mid';
+  return 'val-low';
+}
+
+function utilBarClass(val) {
+  if (val >= 90) return 'bar-crit';
+  if (val >= 70) return 'bar-high';
+  if (val >= 40) return 'bar-mid';
+  return 'bar-low';
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+}
+
+function showSpinner(on) {
+  document.getElementById('spinner').classList.toggle('active', on);
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('error-banner').classList.remove('visible');
+}
+
+function updateStatus(ok) {
+  document.getElementById('status-dot').className = 'status-dot' + (ok ? '' : ' error');
+  document.getElementById('status-text').textContent = ok
+    ? `已连接 ${PROM_URL}`
+    : `连接失败 ${PROM_URL}`;
+  document.getElementById('last-update').textContent =
+    `最后更新: ${new Date().toLocaleTimeString('zh-CN')}`;
+  document.getElementById('loading').classList.add('hidden');
+}
+
+// ───── Auto refresh ─────
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(loadAll, REFRESH_INTERVAL);
+}
+
+// ───── Init ─────
+loadAll().then(startAutoRefresh);
+</script>
+</body>
+</html>
