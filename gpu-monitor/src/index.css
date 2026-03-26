@@ -1,0 +1,73 @@
+:root {
+  --text: #9ca3af;
+  --text-h: #f3f4f6;
+  --bg: #0c0d10;
+  --border: #2e303a;
+  --panel-bg: rgba(30, 31, 38, 0.85);
+  --card-bg: rgba(22, 23, 29, 0.95);
+  --input-bg: #16171d;
+  --accent: #c084fc;
+  --accent-bg: rgba(192, 132, 252, 0.12);
+  --accent-border: rgba(192, 132, 252, 0.45);
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  font: 15px/145% var(--sans);
+  letter-spacing: 0.02em;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --text: #4b5563;
+    --text-h: #111827;
+    --bg: #f4f4f5;
+    --border: #e5e7eb;
+    --panel-bg: #ffffff;
+    --card-bg: #fafafa;
+    --input-bg: #ffffff;
+    --accent: #7c3aed;
+    --accent-bg: rgba(124, 58, 237, 0.08);
+    --accent-border: rgba(124, 58, 237, 0.35);
+  }
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+code {
+  font-family: var(--mono);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.9em;
+}
+
+@media (prefers-color-scheme: light) {
+  code {
+    background: rgba(0, 0, 0, 0.06);
+  }
+}
