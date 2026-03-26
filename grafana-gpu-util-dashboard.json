@@ -346,7 +346,63 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "折线图 + 右侧表格同时展示每台机器每张卡的 GPU Util 当前值与历史统计（Min/Max/Mean）。",
+      "description": "直观看到每个节点每张 GPU 的当前利用率，顶部支持按 All 或某个 IP 过滤。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 12,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 12,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "text"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
+          "instant": true,
+          "legendFormat": "{{internal_ip}} / {{node}} / GPU{{gpu}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "当前每机每卡 GPU 利用率（IP / Node / GPU）",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "折线图 + 右侧表格同时展示每台机器每张卡的 GPU Util 当前值、IP、节点名和历史统计（Min/Max/Mean）。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -394,7 +450,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 12
       },
       "id": 5,
       "options": {
@@ -418,14 +474,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{internal_ip}} / {{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU 利用率趋势（含当前值与历史统计）",
+      "title": "每机每卡 GPU 利用率趋势（IP / Node / GPU，含当前值与历史统计）",
       "type": "timeseries"
     },
     {
@@ -433,7 +489,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "按节点聚合的平均 GPU Util，可快速判断机器之间是否均衡。",
+      "description": "按节点聚合的平均 GPU Util，同时显示 IP，便于快速判断不同机器之间是否均衡。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -450,7 +506,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 22
       },
       "id": 6,
       "options": {
@@ -474,14 +530,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range])) * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": true,
-          "legendFormat": "{{node}}",
+          "legendFormat": "{{internal_ip}} / {{node}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "节点平均 GPU 利用率（时间范围平均/负载均衡观察）",
+      "title": "节点平均 GPU 利用率（带 IP，时间范围平均）",
       "type": "bargauge"
     },
     {
@@ -489,7 +545,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "表格展示每个节点每张卡在当前时间范围内的 Current/Min/Max/Mean。",
+      "description": "表格展示每个节点每张卡在当前时间范围内的 IP / Node / GPU / Current / Min / Max / Mean。",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -501,7 +557,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 22
       },
       "id": 7,
       "options": {
@@ -520,14 +576,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{internal_ip}} / {{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU Util 汇总表（当前值 + 历史状态）",
+      "title": "每机每卡 GPU Util 汇总表（IP + 当前值 + 历史状态）",
       "transformations": [
         {
           "id": "reduce",
@@ -545,23 +601,38 @@
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true
+              "Time": true,
+              "__name__": true,
+              "DCGM_FI_DRIVER_VERSION": true,
+              "Hostname": true,
+              "UUID": true,
+              "app": true,
+              "device": true,
+              "instance": true,
+              "job": true,
+              "modelName": true,
+              "namespace": true,
+              "origin_prometheus": true,
+              "pci_bus_id": true,
+              "service": true
             },
             "indexByName": {
-              "Value #A (lastNotNull)": 2,
-              "Value #A (max)": 4,
-              "Value #A (mean)": 5,
-              "Value #A (min)": 3,
-              "gpu": 1,
-              "node": 0
+              "internal_ip": 0,
+              "node": 1,
+              "gpu": 2,
+              "Value #A (lastNotNull)": 3,
+              "Value #A (min)": 4,
+              "Value #A (max)": 5,
+              "Value #A (mean)": 6
             },
             "renameByName": {
-              "Value #A (lastNotNull)": "Current",
-              "Value #A (max)": "Max",
-              "Value #A (mean)": "Mean",
-              "Value #A (min)": "Min",
+              "internal_ip": "IP",
+              "node": "Node",
               "gpu": "GPU",
-              "node": "Node"
+              "Value #A (lastNotNull)": "Current",
+              "Value #A (min)": "Min",
+              "Value #A (max)": "Max",
+              "Value #A (mean)": "Mean"
             }
           }
         }
@@ -573,7 +644,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "折线图 + 右侧表格同时展示每台机器每张卡显存占用率（由 FB_USED / (FB_USED + FB_FREE) 计算）。",
+      "description": "折线图 + 右侧表格同时展示每台机器每张卡显存占用率（由 FB_USED / (FB_USED + FB_FREE) 计算），并带出 IP。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -621,7 +692,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 30
       },
       "id": 10,
       "options": {
@@ -645,14 +716,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} / clamp_min((DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} + DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}), 1)",
+          "expr": "(100 * DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} / clamp_min((DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} + DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}), 1)) * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{internal_ip}} / {{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU 显存占用率趋势（当前值 + 历史统计）",
+      "title": "每机每卡 GPU 显存占用率趋势（IP / Node / GPU，当前值 + 历史统计）",
       "type": "timeseries"
     },
     {
@@ -660,7 +731,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "表格展示每个节点每张卡在当前时间范围内的显存已用（MiB）的 Current/Min/Max/Mean。",
+      "description": "表格展示每个节点每张卡在当前时间范围内的 IP / Node / GPU / 显存已用（MiB）Current / Min / Max / Mean。",
       "fieldConfig": {
         "defaults": {
           "decimals": 0,
@@ -672,7 +743,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 30
       },
       "id": 11,
       "options": {
@@ -691,14 +762,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": false,
-          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "legendFormat": "{{internal_ip}} / {{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU 显存已用汇总表（MiB，当前值 + 历史状态）",
+      "title": "每机每卡 GPU 显存已用汇总表（IP + 当前值 + 历史状态）",
       "transformations": [
         {
           "id": "reduce",
@@ -716,23 +787,38 @@
           "id": "organize",
           "options": {
             "excludeByName": {
-              "Time": true
+              "Time": true,
+              "__name__": true,
+              "DCGM_FI_DRIVER_VERSION": true,
+              "Hostname": true,
+              "UUID": true,
+              "app": true,
+              "device": true,
+              "instance": true,
+              "job": true,
+              "modelName": true,
+              "namespace": true,
+              "origin_prometheus": true,
+              "pci_bus_id": true,
+              "service": true
             },
             "indexByName": {
-              "Value #A (lastNotNull)": 2,
-              "Value #A (max)": 4,
-              "Value #A (mean)": 5,
-              "Value #A (min)": 3,
-              "gpu": 1,
-              "node": 0
+              "internal_ip": 0,
+              "node": 1,
+              "gpu": 2,
+              "Value #A (lastNotNull)": 3,
+              "Value #A (min)": 4,
+              "Value #A (max)": 5,
+              "Value #A (mean)": 6
             },
             "renameByName": {
-              "Value #A (lastNotNull)": "Current(MiB)",
-              "Value #A (max)": "Max(MiB)",
-              "Value #A (mean)": "Mean(MiB)",
-              "Value #A (min)": "Min(MiB)",
+              "internal_ip": "IP",
+              "node": "Node",
               "gpu": "GPU",
-              "node": "Node"
+              "Value #A (lastNotNull)": "Current(MiB)",
+              "Value #A (min)": "Min(MiB)",
+              "Value #A (max)": "Max(MiB)",
+              "Value #A (mean)": "Mean(MiB)"
             }
           }
         }
@@ -745,11 +831,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 38
       },
       "id": 8,
       "panels": [],
-      "title": "节点明细",
+      "title": "节点明细（按所选 IP / 节点）",
       "type": "row"
     },
     {
@@ -757,7 +843,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "同一节点下同时展示每张卡 GPU Util（左轴，%）与显存已用（右轴，MiB 原始值）。",
+      "description": "同一节点下同时展示每张卡 GPU Util（左轴，%）与显存已用（右轴，MiB 原始值），并在图例中带出 IP。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -822,7 +908,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 39
       },
       "id": 9,
       "maxPerRow": 2,
@@ -847,22 +933,22 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"} * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": false,
-          "legendFormat": "GPU{{gpu}}",
+          "legendFormat": "GPU{{gpu}} @ {{internal_ip}}",
           "range": true,
           "refId": "A"
         },
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_FB_USED{node=\"$node\", gpu=~\"${gpu:regex}\"}",
+          "expr": "DCGM_FI_DEV_FB_USED{node=\"$node\", gpu=~\"${gpu:regex}\"} * on(node) group_left(internal_ip) max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"})",
           "instant": false,
-          "legendFormat": "GPU{{gpu}} MemUsed",
+          "legendFormat": "GPU{{gpu}} MemUsed @ {{internal_ip}}",
           "range": true,
           "refId": "B"
         }
       ],
-      "title": "节点 $node：每张卡 GPU 利用率 + 显存已用趋势",
+      "title": "节点 $node：每张卡 GPU 利用率 + 显存已用趋势（含 IP）",
       "type": "timeseries"
     }
   ],
@@ -882,30 +968,54 @@
         "allValue": ".*",
         "current": {
           "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+        "definition": "query_result(max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"}) and on(node) max by (node) (DCGM_FI_DEV_GPU_UTIL))",
         "hide": 0,
+        "includeAll": true,
+        "label": "IP",
+        "multi": false,
+        "name": "ip",
+        "options": [],
+        "query": {
+          "query": "query_result(max by (node, internal_ip) (kube_node_info{internal_ip!=\"\"}) and on(node) max by (node) (DCGM_FI_DEV_GPU_UTIL))",
+          "refId": "PrometheusVariableQueryEditor-IP"
+        },
+        "refresh": 2,
+        "regex": "/.*internal_ip=\"([^\"]+)\".*/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "query_result(max by (node, internal_ip) (kube_node_info{internal_ip=~\"${ip:regex}\"}) and on(node) max by (node) (DCGM_FI_DEV_GPU_UTIL))",
+        "hide": 2,
         "includeAll": true,
         "label": "Node",
         "multi": true,
         "name": "node",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+          "query": "query_result(max by (node, internal_ip) (kube_node_info{internal_ip=~\"${ip:regex}\"}) and on(node) max by (node) (DCGM_FI_DEV_GPU_UTIL))",
           "refId": "PrometheusVariableQueryEditor-Node"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "/.*node=\"([^\"]+)\".*/",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
@@ -958,8 +1068,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "AI GPU Util Monitoring (Dynamic Nodes)",
+  "title": "AI GPU Util Monitoring (IP Filtered Nodes)",
   "uid": "ai-gpu-util-dynamic",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
