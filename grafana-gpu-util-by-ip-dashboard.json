@@ -510,7 +510,7 @@
       "id": 7,
       "panels": [],
       "repeat": "node",
-      "title": "按节点展开（左历史，右实时）",
+      "title": "按节点展开（左历史可Hover，右实时用量）",
       "type": "row"
     },
     {
@@ -518,7 +518,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "节点 $node 的历史曲线（鼠标悬停可看时间点和当时利用率）。",
+      "description": "节点 $node 的历史数据（鼠标悬停可看时间点和当时使用率）。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -595,7 +595,7 @@
           "refId": "A"
         }
       ],
-      "title": "节点 $node：历史使用率（Hover 看时间点/利用率）",
+      "title": "节点 $node：历史数据（Hover 看时间点/使用率）",
       "type": "timeseries"
     },
     {
@@ -603,7 +603,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "节点 $node 的实时 GPU 用量（当前值）。",
+      "description": "节点 $node 的实时用量（当前值）。",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -642,7 +642,7 @@
           "refId": "A"
         }
       ],
-      "title": "节点 $node：实时用量",
+      "title": "节点 $node：实时用量（当前）",
       "transformations": [
         {
           "id": "organize",
@@ -788,8 +788,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU 使用监控（按 IP 筛选）",
-  "uid": "gpu-util-ip-filter",
-  "version": 1,
+  "title": "GPU 使用监控（按 IP 筛选，左历史右实时）",
+  "uid": "gpu-util-ip-filter-v2",
+  "version": 2,
   "weekStart": ""
 }
