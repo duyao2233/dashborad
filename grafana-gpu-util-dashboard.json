@@ -65,7 +65,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 1,
   "id": null,
   "links": [],
   "liveNow": false,
@@ -123,14 +123,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(count by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}))",
+          "expr": "count(max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "在线节点数",
+      "title": "在线 GPU 节点数",
       "type": "stat"
     },
     {
@@ -186,7 +186,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "count(count by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
+          "expr": "count(max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -255,7 +255,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
+          "expr": "avg(max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
           "instant": true,
           "legendFormat": "当前瞬时平均",
           "range": false,
@@ -263,28 +263,29 @@
         },
         {
           "editorMode": "code",
-          "expr": "avg(avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg(max by (node, gpu) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range])))",
           "instant": true,
           "legendFormat": "时间范围平均",
           "range": false,
           "refId": "B"
         }
       ],
-      "title": "集群平均 GPU 利用率（瞬时 + 时间范围）",
-      "type": "stat"
+      "title": "所选范围 GPU 利用率（当前 + 时间范围均值）",
+      "type": "stat",
+      "description": "同时展示当前瞬时平均值和当前时间范围内的平均值，方便快速判断整体 GPU 利用率水平。"
     },
     {
       "datasource": {
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "CV = 节点平均利用率标准差 / 节点平均利用率均值。越接近 0 说明越均衡。",
+      "description": "当前筛选范围内利用率最高的一张 GPU。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "decimals": 2,
+          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -302,7 +303,9 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "percent",
+          "max": 100,
+          "min": 0
         },
         "overrides": []
       },
@@ -331,14 +334,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "stddev(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})) / clamp_min(avg(avg by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})), 1)",
+          "expr": "max(max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
           "instant": true,
           "legendFormat": "",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "负载均衡系数 (CV)",
+      "title": "当前最忙 GPU 利用率",
       "type": "stat"
     },
     {
@@ -346,7 +349,80 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "折线图 + 右侧表格同时展示每台机器每张卡的 GPU Util 当前值与历史统计（Min/Max/Mean）。",
+      "description": "按照 Node / GPU 维度展示当前瞬时利用率。可先用顶部 Node IP 过滤到某台机器，再查看该机器所有 GPU 的当前值。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 12,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 12,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
+          "instant": true,
+          "legendFormat": "{{node}} / GPU{{gpu}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "每个 Node / GPU 当前利用率",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "按 Node / GPU 去重后展示每张卡的 GPU 利用率曲线，图例右侧同时显示当前值和历史统计。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -394,7 +470,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 12
       },
       "id": 5,
       "options": {
@@ -418,14 +494,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
           "instant": false,
           "legendFormat": "{{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU 利用率趋势（含当前值与历史统计）",
+      "title": "每个 Node / GPU 的 GPU 利用率趋势（当前值 + 历史统计）",
       "type": "timeseries"
     },
     {
@@ -433,7 +509,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "按节点聚合的平均 GPU Util，可快速判断机器之间是否均衡。",
+      "description": "按节点聚合当前 GPU 平均利用率，适合快速识别哪台机器最忙。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -450,7 +526,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 22
       },
       "id": 6,
       "options": {
@@ -474,14 +550,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg by (node) (max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}))",
           "instant": true,
           "legendFormat": "{{node}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "节点平均 GPU 利用率（时间范围平均/负载均衡观察）",
+      "title": "节点平均 GPU 利用率（当前值）",
       "type": "bargauge"
     },
     {
@@ -489,7 +565,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "表格展示每个节点每张卡在当前时间范围内的 Current/Min/Max/Mean。",
+      "description": "表格汇总每个节点每张卡在当前时间范围内的当前值 / 最小值 / 最大值 / 均值。",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -501,7 +577,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 22
       },
       "id": 7,
       "options": {
@@ -520,14 +596,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "max by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
           "instant": false,
           "legendFormat": "{{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU Util 汇总表（当前值 + 历史状态）",
+      "title": "每个 Node / GPU GPU Util 汇总表",
       "transformations": [
         {
           "id": "reduce",
@@ -621,7 +697,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 30
       },
       "id": 10,
       "options": {
@@ -645,14 +721,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} / clamp_min((DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"} + DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}), 1)",
+          "expr": "100 * max by (node, gpu) (DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}) / clamp_min((max by (node, gpu) (DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}) + max by (node, gpu) (DCGM_FI_DEV_FB_FREE{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})), 1)",
           "instant": false,
           "legendFormat": "{{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU 显存占用率趋势（当前值 + 历史统计）",
+      "title": "每个 Node / GPU 显存占用率趋势（当前值 + 历史统计）",
       "type": "timeseries"
     },
     {
@@ -672,7 +748,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 30
       },
       "id": 11,
       "options": {
@@ -691,14 +767,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}",
+          "expr": "max by (node, gpu) (DCGM_FI_DEV_FB_USED{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"})",
           "instant": false,
           "legendFormat": "{{node}} / GPU{{gpu}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "每机每卡 GPU 显存已用汇总表（MiB，当前值 + 历史状态）",
+      "title": "每个 Node / GPU 显存已用汇总表（MiB）",
       "transformations": [
         {
           "id": "reduce",
@@ -745,11 +821,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 38
       },
       "id": 8,
       "panels": [],
-      "title": "节点明细",
+      "title": "按节点查看 GPU 历史趋势",
       "type": "row"
     },
     {
@@ -757,7 +833,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "同一节点下同时展示每张卡 GPU Util（左轴，%）与显存已用（右轴，MiB 原始值）。",
+      "description": "每台机器单独一张图，展示该节点所有 GPU 的历史利用率曲线；图例中的 Last/Min/Max/Mean 即当前值与历史统计。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -770,7 +846,7 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 8,
+            "fillOpacity": 6,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -799,30 +875,13 @@
           "min": 0,
           "unit": "percent"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".* MemUsed$"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "none"
-              },
-              {
-                "id": "custom.axisPlacement",
-                "value": "right"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 39
       },
       "id": 9,
       "maxPerRow": 2,
@@ -830,11 +889,12 @@
         "legend": {
           "calcs": [
             "lastNotNull",
+            "min",
             "max",
             "mean"
           ],
           "displayMode": "table",
-          "placement": "right",
+          "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
@@ -847,22 +907,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"}",
+          "expr": "max by (gpu) (DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"})",
           "instant": false,
           "legendFormat": "GPU{{gpu}}",
           "range": true,
           "refId": "A"
-        },
-        {
-          "editorMode": "code",
-          "expr": "DCGM_FI_DEV_FB_USED{node=\"$node\", gpu=~\"${gpu:regex}\"}",
-          "instant": false,
-          "legendFormat": "GPU{{gpu}} MemUsed",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "节点 $node：每张卡 GPU 利用率 + 显存已用趋势",
+      "title": "节点 $node：每张 GPU 历史利用率趋势",
       "type": "timeseries"
     }
   ],
@@ -874,7 +926,8 @@
     "ai",
     "dcgm",
     "capacity",
-    "load-balance"
+    "load-balance",
+    "monitoring"
   ],
   "templating": {
     "list": [
@@ -893,7 +946,39 @@
           "type": "prometheus",
           "uid": "${DS_PROMETHEUS}"
         },
-        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+        "definition": "query_result(max by (node, internal_ip) (kube_node_info) * on(node) group_left() max by (node) (DCGM_FI_DEV_GPU_UTIL))",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Node IP",
+        "multi": true,
+        "name": "internal_ip",
+        "options": [],
+        "query": {
+          "query": "query_result(max by (node, internal_ip) (kube_node_info) * on(node) group_left() max by (node) (DCGM_FI_DEV_GPU_UTIL))",
+          "refId": "PrometheusVariableQueryEditor-InternalIP"
+        },
+        "refresh": 2,
+        "regex": "/internal_ip=\"([^\"]+)\"/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "query_result(max by (node, internal_ip) (kube_node_info{internal_ip=~\"${internal_ip:regex}\"}) * on(node) group_left() max by (node) (DCGM_FI_DEV_GPU_UTIL))",
         "hide": 0,
         "includeAll": true,
         "label": "Node",
@@ -901,11 +986,11 @@
         "name": "node",
         "options": [],
         "query": {
-          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+          "query": "query_result(max by (node, internal_ip) (kube_node_info{internal_ip=~\"${internal_ip:regex}\"}) * on(node) group_left() max by (node) (DCGM_FI_DEV_GPU_UTIL))",
           "refId": "PrometheusVariableQueryEditor-Node"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "/node=\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
@@ -958,8 +1043,8 @@
     ]
   },
   "timezone": "browser",
-  "title": "AI GPU Util Monitoring (Dynamic Nodes)",
+  "title": "GPU 监控面板（Node / IP / GPU）",
   "uid": "ai-gpu-util-dynamic",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
