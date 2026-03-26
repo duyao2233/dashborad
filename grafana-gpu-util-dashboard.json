@@ -816,12 +816,87 @@
       "type": "table"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "按节点重复展示当前每张 GPU 的瞬时利用率，配合顶部 Node IP 筛选可以快速锁定某一台机器当前最忙的卡。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 13,
+      "maxPerRow": 2,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 12,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.4.0",
+      "repeat": "node",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (gpu) (DCGM_FI_DEV_GPU_UTIL{node=\"$node\", gpu=~\"${gpu:regex}\"})",
+          "instant": true,
+          "legendFormat": "GPU{{gpu}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "节点 $node：每张 GPU 当前利用率",
+      "type": "bargauge"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 46
       },
       "id": 8,
       "panels": [],
@@ -881,7 +956,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 47
       },
       "id": 9,
       "maxPerRow": 2,

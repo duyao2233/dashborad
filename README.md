@@ -49,4 +49,5 @@
 - `每个 Node / GPU 当前利用率`：最直观查看每台机器每张卡当前值
 - `每个 Node / GPU 的 GPU 利用率趋势`：查看所有卡的历史趋势
 - `每个 Node / GPU GPU Util 汇总表`：查看 Current / Min / Max / Mean
+- `节点 $node：每张 GPU 当前利用率`：按节点拆分查看该机器上每张卡的实时值
 - `节点 $node：每张 GPU 历史利用率趋势`：按节点拆分查看每张 GPU 的历史数据
