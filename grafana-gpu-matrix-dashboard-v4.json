@@ -66,7 +66,7 @@
       },
       "id": 100,
       "options": {
-        "content": "<div style=\"font-size:12px;text-align:left;font-weight:600;line-height:18px;padding-left:6px;opacity:.9;\">Node</div>",
+        "content": "<div style=\"font-size:11px;text-align:left;font-weight:600;line-height:18px;padding-left:8px;border-bottom:1px solid rgba(148,163,184,.25);background:rgba(15,23,42,.25);\">Node</div>",
         "mode": "html"
       },
       "title": "",
@@ -83,7 +83,7 @@
       "id": 101,
       "maxPerRow": 8,
       "options": {
-        "content": "<div style=\"font-size:11px;text-align:center;font-weight:600;line-height:18px;opacity:.85;\">GPU $gpu</div>",
+        "content": "<div style=\"font-size:10px;text-align:center;font-weight:600;line-height:18px;border-bottom:1px solid rgba(148,163,184,.25);background:rgba(15,23,42,.25);\">GPU $gpu</div>",
         "mode": "html"
       },
       "repeat": "gpu",
@@ -114,7 +114,7 @@
       },
       "id": 102,
       "options": {
-        "content": "<div style=\"font-size:11px;text-align:left;font-weight:500;line-height:42px;padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;\">$node</div>",
+        "content": "<div style=\"font-size:10px;text-align:left;font-weight:500;line-height:34px;padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid rgba(148,163,184,.16);\">$node</div>",
         "mode": "html"
       },
       "title": "",
@@ -126,14 +126,14 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "QPS风格单元格：每机每卡显示当前GPU利用率 + 历史趋势。",
+      "description": "QPS卡片风格 + 大表排布：当前GPU利用率 + 历史趋势。",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "mappings": [],
-          "decimals": 1,
+          "decimals": 0,
           "max": 100,
           "min": 0,
           "noValue": "-",
@@ -169,7 +169,7 @@
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "auto",
+        "justifyMode": "center",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -180,8 +180,8 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "textMode": "value",
+        "wideLayout": false
       },
       "pluginVersion": "12.3.0-18893060694",
       "repeat": "gpu",
@@ -209,7 +209,9 @@
     "sparkline",
     "v4",
     "cards",
-    "qps-style"
+    "qps-style",
+    "big-table-look",
+    "dense-grid"
   ],
   "templating": {
     "list": [
@@ -292,7 +294,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU Util Matrix (QPS-Style Cards) v4",
+  "title": "GPU Util Matrix (QPS-Style Big Table) v4",
   "uid": "ai-gpu-util-matrix-v4",
-  "version": 2
+  "version": 3
 }
