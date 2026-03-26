@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPU 监控面板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<style>
+:root {
+  --bg-primary: #0f1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --bg-hover: #252c35;
+  --border: #30363d;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --accent-blue: #58a6ff;
+  --accent-green: #3fb950;
+  --accent-yellow: #d29922;
+  --accent-red: #f85149;
+  --accent-purple: #bc8cff;
+  --gauge-bg: #21262d;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.header h1 .icon { font-size: 24px; }
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.control-group label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+select, button {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+select:hover, button:hover { border-color: var(--accent-blue); }
+select:focus, button:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(88,166,255,0.15); }
+button.primary {
+  background: var(--accent-blue);
+  color: #fff;
+  border-color: var(--accent-blue);
+  font-weight: 500;
+}
+button.primary:hover { opacity: 0.9; }
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.last-update {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.container { max-width: 1600px; margin: 0 auto; padding: 20px 24px; }
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  transition: border-color 0.2s;
+}
+.summary-card:hover { border-color: var(--accent-blue); }
+.summary-card .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.summary-card .value {
+  font-size: 28px;
+  font-weight: 700;
+}
+.summary-card .sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.node-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.node-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+}
+.node-header:hover { background: var(--bg-hover); }
+.node-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.node-title .model-badge {
+  font-size: 11px;
+  background: rgba(88,166,255,0.15);
+  color: var(--accent-blue);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.node-avg {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.node-avg .avg-val { font-weight: 600; color: var(--text-primary); }
+.node-body { padding: 16px 20px; }
+
+.gpu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.gpu-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  transition: transform 0.15s, border-color 0.2s;
+}
+.gpu-card:hover { transform: translateY(-2px); border-color: var(--accent-blue); }
+.gpu-card .gpu-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.gpu-gauge {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 8px;
+}
+.gpu-gauge svg { transform: rotate(-90deg); }
+.gpu-gauge .gauge-bg {
+  fill: none;
+  stroke: var(--gauge-bg);
+  stroke-width: 8;
+}
+.gpu-gauge .gauge-fill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease, stroke 0.3s;
+}
+.gpu-gauge .gauge-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: 700;
+}
+.gpu-card .gpu-mem {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.gpu-card .gpu-mem span { color: var(--text-primary); font-weight: 500; }
+
+.chart-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+}
+.chart-container h3 {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.chart-wrap { position: relative; height: 280px; }
+
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,17,23,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  flex-direction: column;
+  gap: 16px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--text-secondary); font-size: 14px; }
+
+.collapse-icon { transition: transform 0.2s; font-size: 12px; color: var(--text-secondary); }
+.collapsed .collapse-icon { transform: rotate(-90deg); }
+.collapsed .node-body { display: none; }
+
+.error-banner {
+  background: rgba(248,81,73,0.1);
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  display: none;
+}
+
+.table-section {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table tr:hover td { background: var(--bg-hover); }
+.util-bar {
+  display: inline-block;
+  height: 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+  min-width: 40px;
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">正在连接 Prometheus 获取 GPU 数据...</div>
+</div>
+
+<header class="header">
+  <div class="header-top">
+    <h1><span class="icon">⚡</span> GPU 监控面板</h1>
+    <div class="controls">
+      <div class="control-group">
+        <label for="nodeFilter">节点筛选:</label>
+        <select id="nodeFilter">
+          <option value="all">All（全部节点）</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="timeRange">时间范围:</label>
+        <select id="timeRange">
+          <option value="1800">30 分钟</option>
+          <option value="3600" selected>1 小时</option>
+          <option value="10800">3 小时</option>
+          <option value="21600">6 小时</option>
+          <option value="43200">12 小时</option>
+          <option value="86400">24 小时</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="refreshInterval">刷新间隔:</label>
+        <select id="refreshInterval">
+          <option value="10">10 秒</option>
+          <option value="30" selected>30 秒</option>
+          <option value="60">60 秒</option>
+          <option value="0">手动</option>
+        </select>
+      </div>
+      <button class="primary" onclick="refreshAll()">刷新</button>
+      <span class="status-dot" id="statusDot"></span>
+      <span class="last-update" id="lastUpdate">--</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="error-banner" id="errorBanner"></div>
+  <div class="summary-row" id="summaryRow"></div>
+  <div id="nodeContainer"></div>
+</div>
+
+<script>
+const PROMETHEUS_URL = 'http://157.66.255.189:32003';
+const GPU_COLORS = [
+  '#58a6ff', '#3fb950', '#d29922', '#f85149',
+  '#bc8cff', '#f778ba', '#79c0ff', '#56d364'
+];
+
+let allNodes = [];
+let charts = {};
+let refreshTimer = null;
+
+function getUtilColor(val) {
+  if (val >= 85) return 'var(--accent-red)';
+  if (val >= 50) return 'var(--accent-yellow)';
+  return 'var(--accent-green)';
+}
+
+async function promQuery(query, instant = true) {
+  const endpoint = instant ? 'query' : 'query_range';
+  const url = `${PROMETHEUS_URL}/api/v1/${endpoint}`;
+  const params = new URLSearchParams();
+  params.set('query', query);
+  if (!instant) {
+    const now = Math.floor(Date.now() / 1000);
+    const range = parseInt(document.getElementById('timeRange').value);
+    params.set('start', now - range);
+    params.set('end', now);
+    const step = Math.max(15, Math.floor(range / 200));
+    params.set('step', step);
+  }
+  const resp = await fetch(`${url}?${params.toString()}`);
+  if (!resp.ok) throw new Error(`Prometheus 查询失败: ${resp.status}`);
+  const data = await resp.json();
+  if (data.status !== 'success') throw new Error(`查询错误: ${data.error || 'unknown'}`);
+  return data.data.result;
+}
+
+function showError(msg) {
+  const banner = document.getElementById('errorBanner');
+  banner.textContent = msg;
+  banner.style.display = 'block';
+  setTimeout(() => { banner.style.display = 'none'; }, 8000);
+}
+
+async function fetchNodeList() {
+  const result = await promQuery('DCGM_FI_DEV_GPU_UTIL');
+  const nodeSet = new Map();
+  result.forEach(r => {
+    const node = r.metric.node;
+    if (!nodeSet.has(node)) {
+      nodeSet.set(node, { name: node, model: r.metric.modelName || 'GPU', gpus: [] });
+    }
+    nodeSet.get(node).gpus.push({
+      id: r.metric.gpu,
+      uuid: r.metric.UUID,
+      device: r.metric.device,
+      util: parseFloat(r.value[1])
+    });
+  });
+  nodeSet.forEach(n => n.gpus.sort((a, b) => parseInt(a.id) - parseInt(b.id)));
+  return Array.from(nodeSet.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function populateNodeFilter(nodes) {
+  const sel = document.getElementById('nodeFilter');
+  const currentVal = sel.value;
+  while (sel.options.length > 1) sel.remove(1);
+  nodes.forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n.name;
+    opt.textContent = n.name;
+    sel.appendChild(opt);
+  });
+  if (currentVal && [...sel.options].some(o => o.value === currentVal)) {
+    sel.value = currentVal;
+  }
+}
+
+function renderSummary(nodes) {
+  const totalNodes = nodes.length;
+  const totalGPUs = nodes.reduce((s, n) => s + n.gpus.length, 0);
+  const allUtils = nodes.flatMap(n => n.gpus.map(g => g.util));
+  const avgUtil = allUtils.length ? (allUtils.reduce((a, b) => a + b, 0) / allUtils.length) : 0;
+  const maxUtil = allUtils.length ? Math.max(...allUtils) : 0;
+  const minUtil = allUtils.length ? Math.min(...allUtils) : 0;
+
+  document.getElementById('summaryRow').innerHTML = `
+    <div class="summary-card">
+      <div class="label">在线节点</div>
+      <div class="value" style="color:var(--accent-blue)">${totalNodes}</div>
+      <div class="sub">reporting DCGM metrics</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">GPU 总数</div>
+      <div class="value" style="color:var(--accent-purple)">${totalGPUs}</div>
+      <div class="sub">${nodes[0]?.model || 'GPU'}</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">平均利用率</div>
+      <div class="value" style="color:${getUtilColor(avgUtil)}">${avgUtil.toFixed(1)}%</div>
+      <div class="sub">across all GPUs</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">最高 / 最低</div>
+      <div class="value" style="font-size:22px">
+        <span style="color:${getUtilColor(maxUtil)}">${maxUtil.toFixed(0)}%</span>
+        <span style="color:var(--text-secondary);font-size:16px"> / </span>
+        <span style="color:${getUtilColor(minUtil)}">${minUtil.toFixed(0)}%</span>
+      </div>
+      <div class="sub">max / min GPU util</div>
+    </div>
+  `;
+}
+
+function createGaugeRing(value, size = 80) {
+  const r = (size - 8) / 2;
+  const circumference = 2 * Math.PI * r;
+  const offset = circumference * (1 - value / 100);
+  const color = getUtilColor(value);
+  return `
+    <div class="gpu-gauge" style="width:${size}px;height:${size}px">
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle class="gauge-bg" cx="${size/2}" cy="${size/2}" r="${r}"/>
+        <circle class="gauge-fill" cx="${size/2}" cy="${size/2}" r="${r}"
+          stroke="${color}"
+          stroke-dasharray="${circumference}"
+          stroke-dashoffset="${offset}"/>
+      </svg>
+      <div class="gauge-text" style="color:${color}">${value.toFixed(0)}%</div>
+    </div>`;
+}
+
+function renderNodeSection(node, memData) {
+  const avgUtil = node.gpus.reduce((s, g) => s + g.util, 0) / node.gpus.length;
+  const nodeId = `node-${node.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
+  const gpuCards = node.gpus.map(g => {
+    const mem = memData[`${node.name}_${g.id}`];
+    const memStr = mem ? `<div class="gpu-mem">显存: <span>${mem.toFixed(0)} MiB</span></div>` : '';
+    return `
+      <div class="gpu-card">
+        <div class="gpu-label">GPU ${g.id}</div>
+        ${createGaugeRing(g.util)}
+        ${memStr}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="node-section" id="${nodeId}">
+      <div class="node-header" onclick="toggleNode('${nodeId}')">
+        <div class="node-title">
+          <span class="collapse-icon">▼</span>
+          ${node.name}
+          <span class="model-badge">${node.model} × ${node.gpus.length}</span>
+        </div>
+        <div class="node-avg">
+          节点平均利用率: <span class="avg-val" style="color:${getUtilColor(avgUtil)}">${avgUtil.toFixed(1)}%</span>
+        </div>
+      </div>
+      <div class="node-body">
+        <div class="gpu-grid">${gpuCards}</div>
+        <div class="chart-container">
+          <h3>GPU 利用率历史趋势</h3>
+          <div class="chart-wrap"><canvas id="chart-util-${nodeId}"></canvas></div>
+        </div>
+        <div class="chart-container" style="margin-top:12px">
+          <h3>GPU 显存使用历史趋势 (MiB)</h3>
+          <div class="chart-wrap"><canvas id="chart-mem-${nodeId}"></canvas></div>
+        </div>
+        <div class="table-section">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>GPU</th>
+                <th>当前利用率</th>
+                <th>显存使用 (MiB)</th>
+                <th>设备</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${node.gpus.map(g => {
+                const mem = memData[`${node.name}_${g.id}`];
+                return `<tr>
+                  <td>GPU ${g.id}</td>
+                  <td>
+                    <span class="util-bar" style="width:${Math.max(g.util, 2)}px;background:${getUtilColor(g.util)}"></span>
+                    <span style="color:${getUtilColor(g.util)};font-weight:600">${g.util.toFixed(1)}%</span>
+                  </td>
+                  <td>${mem ? mem.toFixed(0) + ' MiB' : '-'}</td>
+                  <td style="color:var(--text-secondary)">${g.device || '-'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleNode(nodeId) {
+  document.getElementById(nodeId).classList.toggle('collapsed');
+}
+
+async function fetchMemData() {
+  const result = await promQuery('DCGM_FI_DEV_FB_USED');
+  const map = {};
+  result.forEach(r => {
+    map[`${r.metric.node}_${r.metric.gpu}`] = parseFloat(r.value[1]);
+  });
+  return map;
+}
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+}
+
+function createTimeSeriesChart(canvasId, datasets, yLabel, yUnit) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  if (charts[canvasId]) { charts[canvasId].destroy(); delete charts[canvasId]; }
+
+  const chart = new Chart(canvas, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 300 },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            color: '#8b949e',
+            font: { size: 11 },
+            boxWidth: 12,
+            padding: 8,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1c2128',
+          titleColor: '#e6edf3',
+          bodyColor: '#8b949e',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}${yUnit}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'time',
+          time: { tooltipFormat: 'HH:mm:ss', displayFormats: { minute: 'HH:mm', hour: 'HH:mm' } },
+          grid: { color: 'rgba(48,54,61,0.5)' },
+          ticks: { color: '#8b949e', font: { size: 10 }, maxTicksLimit: 12 }
+        },
+        y: {
+          title: { display: true, text: yLabel, color: '#8b949e', font: { size: 11 } },
+          grid: { color: 'rgba(48,54,61,0.5)' },
+          ticks: { color: '#8b949e', font: { size: 10 } },
+          beginAtZero: true,
+          ...(yUnit === '%' ? { max: 100 } : {})
+        }
+      }
+    }
+  });
+  charts[canvasId] = chart;
+}
+
+async function fetchAndRenderHistory(node, nodeId) {
+  try {
+    const [utilHistory, memHistory] = await Promise.all([
+      promQuery(`DCGM_FI_DEV_GPU_UTIL{node="${node.name}"}`, false),
+      promQuery(`DCGM_FI_DEV_FB_USED{node="${node.name}"}`, false)
+    ]);
+
+    const utilDatasets = utilHistory.map((series, i) => ({
+      label: `GPU ${series.metric.gpu}`,
+      data: series.values.map(([t, v]) => ({ x: t * 1000, y: parseFloat(v) })),
+      borderColor: GPU_COLORS[parseInt(series.metric.gpu) % GPU_COLORS.length],
+      backgroundColor: GPU_COLORS[parseInt(series.metric.gpu) % GPU_COLORS.length] + '20',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: false,
+      tension: 0.3
+    })).sort((a, b) => a.label.localeCompare(b.label));
+
+    const memDatasets = memHistory.map((series, i) => ({
+      label: `GPU ${series.metric.gpu}`,
+      data: series.values.map(([t, v]) => ({ x: t * 1000, y: parseFloat(v) })),
+      borderColor: GPU_COLORS[parseInt(series.metric.gpu) % GPU_COLORS.length],
+      backgroundColor: GPU_COLORS[parseInt(series.metric.gpu) % GPU_COLORS.length] + '20',
+      borderWidth: 2,
+      pointRadius: 0,
+      fill: false,
+      tension: 0.3
+    })).sort((a, b) => a.label.localeCompare(b.label));
+
+    createTimeSeriesChart(`chart-util-${nodeId}`, utilDatasets, 'GPU 利用率 (%)', '%');
+    createTimeSeriesChart(`chart-mem-${nodeId}`, memDatasets, '显存使用 (MiB)', ' MiB');
+  } catch (e) {
+    console.error(`Error fetching history for ${node.name}:`, e);
+  }
+}
+
+async function refreshAll() {
+  const dot = document.getElementById('statusDot');
+  dot.style.background = 'var(--accent-yellow)';
+  try {
+    const [nodes, memData] = await Promise.all([fetchNodeList(), fetchMemData()]);
+    allNodes = nodes;
+    populateNodeFilter(nodes);
+
+    const filterVal = document.getElementById('nodeFilter').value;
+    const filtered = filterVal === 'all' ? nodes : nodes.filter(n => n.name === filterVal);
+
+    renderSummary(filtered);
+
+    const collapsedState = {};
+    document.querySelectorAll('.node-section').forEach(el => {
+      collapsedState[el.id] = el.classList.contains('collapsed');
+    });
+
+    destroyCharts();
+    const container = document.getElementById('nodeContainer');
+    container.innerHTML = filtered.map(n => renderNodeSection(n, memData)).join('');
+
+    Object.keys(collapsedState).forEach(id => {
+      const el = document.getElementById(id);
+      if (el && collapsedState[id]) el.classList.add('collapsed');
+    });
+
+    const historyPromises = filtered.map(n => {
+      const nodeId = `node-${n.name.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      return fetchAndRenderHistory(n, nodeId);
+    });
+    await Promise.all(historyPromises);
+
+    dot.style.background = 'var(--accent-green)';
+    document.getElementById('lastUpdate').textContent = `最后更新: ${new Date().toLocaleTimeString()}`;
+    document.getElementById('loadingOverlay').style.display = 'none';
+  } catch (e) {
+    dot.style.background = 'var(--accent-red)';
+    showError(`数据加载失败: ${e.message}`);
+    document.getElementById('loadingOverlay').style.display = 'none';
+    console.error(e);
+  }
+}
+
+function setupAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  const interval = parseInt(document.getElementById('refreshInterval').value);
+  if (interval > 0) {
+    refreshTimer = setInterval(refreshAll, interval * 1000);
+  }
+}
+
+document.getElementById('nodeFilter').addEventListener('change', refreshAll);
+document.getElementById('timeRange').addEventListener('change', refreshAll);
+document.getElementById('refreshInterval').addEventListener('change', setupAutoRefresh);
+
+refreshAll();
+setupAutoRefresh();
+</script>
+</body>
+</html>
