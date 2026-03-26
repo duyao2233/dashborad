@@ -1,0 +1,390 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "Prometheus data source for GPU metrics",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.3.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "description": "纯表模式：每个单元格展示当前值与时间范围趋势，可按 Node 过滤并自动发现新节点。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "sparkline",
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineStyle": {
+                "dash": [
+                  0,
+                  0
+                ],
+                "fill": "solid"
+              },
+              "lineWidth": 2,
+              "fillOpacity": 66,
+              "gradientMode": "hue",
+              "showPoints": "never",
+              "pointSize": 1,
+              "spanNulls": true,
+              "hideValue": false
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": true
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#56A64B",
+                "value": null
+              },
+              {
+                "color": "#E0B400",
+                "value": 55
+              },
+              {
+                "color": "#E24D42",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Node"
+            },
+            "properties": [
+              {
+                "id": "custom.align",
+                "value": "left"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "md",
+        "columnFilter": true,
+        "frozenColumns": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Node"
+          }
+        ]
+      },
+      "pluginVersion": "12.3.0-18893060694",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"0\"})",
+          "instant": false,
+          "legendFormat": "1卡",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"1\"})",
+          "instant": false,
+          "legendFormat": "2卡",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"2\"})",
+          "instant": false,
+          "legendFormat": "3卡",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"3\"})",
+          "instant": false,
+          "legendFormat": "4卡",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"4\"})",
+          "instant": false,
+          "legendFormat": "5卡",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"5\"})",
+          "instant": false,
+          "legendFormat": "6卡",
+          "range": true,
+          "refId": "F"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"6\"})",
+          "instant": false,
+          "legendFormat": "7卡",
+          "range": true,
+          "refId": "G"
+        },
+        {
+          "editorMode": "code",
+          "expr": "max by (node) (DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\", gpu=~\"${gpu:regex}\", gpu=\"7\"})",
+          "instant": false,
+          "legendFormat": "8卡",
+          "range": true,
+          "refId": "H"
+        }
+      ],
+      "title": "GPU 利用率矩阵大表（Node x GPU：当前值 + 历史折线）",
+      "transformations": [
+        {
+          "id": "timeSeriesTable",
+          "options": {}
+        },
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "node",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "1卡": 1,
+              "2卡": 2,
+              "3卡": 3,
+              "4卡": 4,
+              "5卡": 5,
+              "6卡": 6,
+              "7卡": 7,
+              "8卡": 8,
+              "Node": 0
+            },
+            "renameByName": {
+              "A": "1卡",
+              "B": "2卡",
+              "C": "3卡",
+              "D": "4卡",
+              "E": "5卡",
+              "F": "6卡",
+              "G": "7卡",
+              "H": "8卡",
+              "Trend #A": "1卡",
+              "Trend #B": "2卡",
+              "Trend #C": "3卡",
+              "Trend #D": "4卡",
+              "Trend #E": "5卡",
+              "Trend #F": "6卡",
+              "Trend #G": "7卡",
+              "Trend #H": "8卡",
+              "Value #A": "1卡",
+              "Value #B": "2卡",
+              "Value #C": "3卡",
+              "Value #D": "4卡",
+              "Value #E": "5卡",
+              "Value #F": "6卡",
+              "Value #G": "7卡",
+              "Value #H": "8卡",
+              "node": "Node"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "10s",
+  "schemaVersion": 42,
+  "tags": [
+    "gpu",
+    "dcgm",
+    "matrix",
+    "single-table",
+    "sparkline",
+    "v4",
+    "table-like",
+    "forum-aligned"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "node",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL, node)",
+          "refId": "PrometheusVariableQueryEditor-Node"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
+        "hide": 2,
+        "includeAll": true,
+        "label": "GPU",
+        "multi": true,
+        "name": "gpu",
+        "options": [],
+        "query": {
+          "query": "label_values(DCGM_FI_DEV_GPU_UTIL{node=~\"${node:regex}\"}, gpu)",
+          "refId": "PrometheusVariableQueryEditor-GPU"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m"
+    ]
+  },
+  "timezone": "browser",
+  "title": "GPU Util Matrix (Single Big Table) v4",
+  "uid": "ai-gpu-util-matrix-v4",
+  "version": 1
+}
