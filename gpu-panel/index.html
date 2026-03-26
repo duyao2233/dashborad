@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPU 监控面板</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <h1>GPU 监控</h1>
+        <div class="controls">
+          <label class="field">
+            <span>Prometheus 地址</span>
+            <input
+              id="baseUrl"
+              type="text"
+              placeholder="开发环境可留空使用 /prometheus 代理"
+              autocomplete="off"
+            />
+          </label>
+          <label class="field">
+            <span>实例 IP</span>
+            <select id="ipFilter">
+              <option value="">全部</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>时间范围</span>
+            <select id="rangePreset">
+              <option value="3600">最近 1 小时</option>
+              <option value="21600" selected>最近 6 小时</option>
+              <option value="86400">最近 24 小时</option>
+              <option value="259200">最近 3 天</option>
+            </select>
+          </label>
+          <label class="field checkbox">
+            <input type="checkbox" id="autoRefresh" checked />
+            <span>每 30 秒刷新</span>
+          </label>
+          <button type="button" id="refreshBtn" class="btn">立即刷新</button>
+        </div>
+        <p id="status" class="status" aria-live="polite"></p>
+      </header>
+      <main id="grid" class="grid"></main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
