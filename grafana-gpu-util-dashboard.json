@@ -251,7 +251,7 @@
         "type": "prometheus",
         "uid": "PEED51BE0D85F1B07"
       },
-      "description": "每台机器所有卡在当前 Dashboard 时间范围内的平均 GPU Memory 已用（MiB）。",
+      "description": "每台机器所有卡在当前 Dashboard 时间范围内的平均 GPU Memory 占用率（百分比）。",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -259,8 +259,9 @@
           },
           "decimals": 1,
           "mappings": [],
+          "max": 100,
           "min": 0,
-          "unit": "decbytes"
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -292,14 +293,14 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "1048576 * avg by (node) (avg by (node, gpu) (avg_over_time(DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range])))",
+          "expr": "avg by (node) (avg by (node, gpu) (100 * avg_over_time(DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]) / clamp_min((avg_over_time(DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]) + avg_over_time(DCGM_FI_DEV_FB_FREE{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range])), 1)))",
           "instant": true,
           "legendFormat": "{{node}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "每台机器所有卡平均 Memory 已用（选定时间范围）",
+      "title": "每台机器所有卡平均 Memory（选定时间范围）",
       "type": "bargauge"
     }
   ],
