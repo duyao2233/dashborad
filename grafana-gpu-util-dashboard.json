@@ -102,7 +102,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"}",
+          "expr": "avg(DCGM_FI_DEV_GPU_UTIL{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"})",
           "instant": false,
           "legendFormat": "",
           "range": true,
@@ -179,7 +179,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} / clamp_min((DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} + DCGM_FI_DEV_FB_FREE{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"}), 1)",
+          "expr": "avg(100 * DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} / clamp_min((DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} + DCGM_FI_DEV_FB_FREE{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"}), 1))",
           "instant": false,
           "legendFormat": "",
           "range": true,
