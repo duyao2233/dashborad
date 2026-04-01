@@ -350,9 +350,9 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * sum by (instance) (increase(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[$__range])) / clamp_min(max by (instance) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1) / clamp_min($__range_s, 1)",
+          "expr": "100 * (sum by (node) (avg_over_time(rate(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[5m])[$__range:])) / clamp_min(max by (node) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1))",
           "instant": true,
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{node}}",
           "range": false,
           "refId": "A"
         }
@@ -407,7 +407,121 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * sum by (instance) (avg_over_time(container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[$__range])) / clamp_min(max by (instance) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1)",
+          "expr": "100 * (sum by (node) (avg_over_time(container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[$__range])) / clamp_min(max by (node) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1))",
+          "instant": true,
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "每台机器平均内存（选定时间范围）",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PEED51BE0D85F1B07"
+      },
+      "description": "每台机器在当前 Dashboard 时间范围内的平均 CPU 使用率（百分比，基于 cAdvisor）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.0-18893060694",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "100 * avg_over_time((sum by (instance) (irate(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[5m])) / clamp_min(max by (instance) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1))[$__range:])",
+          "instant": true,
+          "legendFormat": "{{instance}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "每台机器平均 CPU（选定时间范围）",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PEED51BE0D85F1B07"
+      },
+      "description": "每台机器在当前 Dashboard 时间范围内的平均内存使用率（百分比，基于 cAdvisor）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 15
+      },
+      "id": 9,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.0-18893060694",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "100 * avg_over_time((sum by (instance) (container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}) / clamp_min(max by (instance) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1))[$__range:])",
           "instant": true,
           "legendFormat": "{{instance}}",
           "range": false,
@@ -527,7 +641,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU 使用监控",
+  "title": "GPU 使用监控 v1.0.0",
   "uid": "gpu-util-mem-ip-filter-v16-cards",
   "version": 1
 }
