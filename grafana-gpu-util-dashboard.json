@@ -102,7 +102,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "DCGM_FI_DEV_GPU_UTIL{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"}",
+          "expr": "avg by (node, gpu) (DCGM_FI_DEV_GPU_UTIL{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"})",
           "instant": false,
           "legendFormat": "",
           "range": true,
@@ -179,7 +179,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} / clamp_min((DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} + DCGM_FI_DEV_FB_FREE{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"}), 1)",
+          "expr": "avg by (node, gpu) (100 * DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} / clamp_min((DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"} + DCGM_FI_DEV_FB_FREE{instance=~\"${ip:regex}:.*\", node=\"$node\", gpu=\"$gpu\"}), 1))",
           "instant": false,
           "legendFormat": "",
           "range": true,
@@ -210,7 +210,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 24,
+        "w": 12,
         "x": 0,
         "y": 9
       },
@@ -236,7 +236,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg by (node) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]))",
+          "expr": "avg by (node) (avg by (node, gpu) (avg_over_time(DCGM_FI_DEV_GPU_UTIL{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range])))",
           "instant": true,
           "legendFormat": "{{node}}",
           "range": false,
@@ -244,6 +244,63 @@
         }
       ],
       "title": "每台机器所有卡平均 UTIL（选定时间范围）",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PEED51BE0D85F1B07"
+      },
+      "description": "每台机器所有卡在当前 Dashboard 时间范围内的平均 GPU Memory 占用率（百分比）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 5,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.0-18893060694",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "avg by (node) (avg by (node, gpu) (100 * avg_over_time(DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]) / clamp_min((avg_over_time(DCGM_FI_DEV_FB_USED{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range]) + avg_over_time(DCGM_FI_DEV_FB_FREE{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", gpu=~\"${gpu:regex}\"}[$__range])), 1)))",
+          "instant": true,
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "每台机器所有卡平均 Memory（选定时间范围）",
       "type": "bargauge"
     }
   ],
