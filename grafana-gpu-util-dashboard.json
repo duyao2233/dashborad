@@ -302,6 +302,120 @@
       ],
       "title": "每台机器所有卡平均 Memory（选定时间范围）",
       "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PEED51BE0D85F1B07"
+      },
+      "description": "每台机器在当前 Dashboard 时间范围内的平均 CPU 使用率（百分比）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 6,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.0-18893060694",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "100 * (1 - (sum by (node) (increase(node_cpu_seconds_total{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\", mode=\"idle\"}[$__range])) / clamp_min(sum by (node) (increase(node_cpu_seconds_total{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\"}[$__range])), 1)))",
+          "instant": true,
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "每台机器平均 CPU（选定时间范围）",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PEED51BE0D85F1B07"
+      },
+      "description": "每台机器在当前 Dashboard 时间范围内的平均内存使用率（百分比）。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "decimals": 1,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 7,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "namePlacement": "left",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.0-18893060694",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "100 * (1 - (avg by (node) (avg_over_time(node_memory_MemAvailable_bytes{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\"}[$__range])) / clamp_min(avg by (node) (avg_over_time(node_memory_MemTotal_bytes{instance=~\"${ip:regex}:.*\", node=~\"${node:regex}\"}[$__range])), 1)))",
+          "instant": true,
+          "legendFormat": "{{node}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "每台机器平均内存（选定时间范围）",
+      "type": "bargauge"
     }
   ],
   "preload": false,
