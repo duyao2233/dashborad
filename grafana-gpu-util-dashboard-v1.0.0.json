@@ -350,7 +350,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * avg_over_time((sum by (instance) (rate(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[5m])) / clamp_min(max by (instance) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1))[$__range:5m])",
+          "expr": "100 * avg_over_time((sum by (instance) (rate(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[5m])) / clamp_min(max by (instance) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1))[$__range:])",
           "instant": true,
           "legendFormat": "{{instance}}",
           "range": false,
@@ -407,7 +407,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * avg_over_time((sum by (instance) (container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}) / clamp_min(max by (instance) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1))[$__range:1m])",
+          "expr": "100 * avg_over_time((sum by (instance) (container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}) / clamp_min(max by (instance) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1))[$__range:])",
           "instant": true,
           "legendFormat": "{{instance}}",
           "range": false,
@@ -527,7 +527,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "GPU 使用监控",
+  "title": "GPU 使用监控 v1.0.0",
   "uid": "gpu-util-mem-ip-filter-v16-cards",
   "version": 1
 }
