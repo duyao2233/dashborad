@@ -350,7 +350,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * sum by (instance) (increase(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[$__range])) / clamp_min(max by (instance) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1) / $__range_s",
+          "expr": "100 * avg_over_time((sum by (instance) (rate(container_cpu_usage_seconds_total{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[5m])) / clamp_min(max by (instance) (machine_cpu_cores{instance=~\"${node:regex}\"}), 1))[$__range:5m])",
           "instant": true,
           "legendFormat": "{{instance}}",
           "range": false,
@@ -407,7 +407,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "100 * sum by (instance) (avg_over_time(container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}[$__range])) / clamp_min(max by (instance) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1)",
+          "expr": "100 * avg_over_time((sum by (instance) (container_memory_working_set_bytes{instance=~\"${node:regex}\", container!=\"\", container!=\"POD\"}) / clamp_min(max by (instance) (machine_memory_bytes{instance=~\"${node:regex}\"}), 1))[$__range:1m])",
           "instant": true,
           "legendFormat": "{{instance}}",
           "range": false,
