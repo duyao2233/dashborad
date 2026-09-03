@@ -1,0 +1,7 @@
+# VM runtime artifacts
+vm/iso/*.iso
+vm/iso/*.log
+vm/disks/
+vm/config/*.log
+vm/config/*.pid
+vm/config/autounattend-build/

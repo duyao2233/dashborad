@@ -1,0 +1,17 @@
+{
+  "name": "junke-clinic-demo",
+  "install": "sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y qemu-system-x86 qemu-utils ovmf genisoimage websockify novnc aria2",
+  "start": "/workspace/vm/scripts/start-vm.sh && /workspace/vm/scripts/start-novnc.sh",
+  "ports": [
+    {
+      "name": "novnc",
+      "port": 6080
+    }
+  ],
+  "terminals": [
+    {
+      "name": "vm-monitor",
+      "command": "tail -f /workspace/vm/config/qemu.log /workspace/vm/config/novnc.log"
+    }
+  ]
+}
