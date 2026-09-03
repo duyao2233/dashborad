@@ -42,7 +42,9 @@ nohup qemu-system-x86_64 \
     -cpu qemu64 \
     -smp 4 \
     -m 8192 \
-    -drive file="$DISK",if=virtio,format=qcow2 \
+    -drive file="$DISK",if=none,id=disk0,format=qcow2 \
+    -device ich9-ahci,id=ahci0 \
+    -device ide-hd,drive=disk0,bus=ahci0.0 \
     -drive file="$WIN_ISO",media=cdrom,readonly=on \
     -drive file="$VIRTIO_ISO",media=cdrom,readonly=on \
     -drive file="$AUTOUNATTEND_ISO",media=cdrom,readonly=on \
